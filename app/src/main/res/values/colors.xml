@@ -97,5 +97,8 @@
     <color name="search_bright_color">#01D277</color>
     <color name="search_color">#EEEEEE</color>
     <color name="yellow">#FFC107</color>
+    <color name="kids_background">#667eea</color>
+    <color name="kids_background_end">#764ba2</color>
 
+    <color name="accent">#FF4081</color>
 </resources>

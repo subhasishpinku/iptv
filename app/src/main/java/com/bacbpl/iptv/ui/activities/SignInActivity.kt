@@ -36,7 +36,7 @@ fun SignInActivity(
     var phoneError by remember { mutableStateOf<String?>(null) }
 
     val focusRequester = remember { FocusRequester() }
-    val context = LocalContext.current // ✅ Get context here
+    val context = LocalContext.current //  Get context here
 
     Box(
         modifier = Modifier.fillMaxSize()

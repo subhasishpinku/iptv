@@ -103,7 +103,22 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
 
+        <activity
+            android:name=".jetfit.ui.activities.OTTplayDeepLinkActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Leanback.NoActionBar"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden">
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="www.ottplay.com" />
+            </intent-filter>
+
+        </activity>
     <!-- SignIn Activity -->
 <!--        <activity-->
 <!--            android:name=".ui.activities.SignInActivity"-->
@@ -157,6 +172,13 @@
 
         <activity
             android:name=".jetfit.ui.activities.TvPlayerActivity"
+            android:theme="@style/Theme.TvPlayer"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"/>
+
+
+        <activity
+            android:name=".jetfit.ui.activities.TvPlayersActivity"
             android:theme="@style/Theme.TvPlayer"
             android:label="@string/app_name"
             android:screenOrientation="landscape"/>

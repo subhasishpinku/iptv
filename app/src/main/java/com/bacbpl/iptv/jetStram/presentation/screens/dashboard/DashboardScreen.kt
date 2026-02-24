@@ -341,6 +341,7 @@ import com.bacbpl.iptv.jetStram.presentation.utils.Padding
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.DashboardTopBar
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.TopBarFocusRequesters
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.TopBarTabs
+import com.bacbpl.iptv.jetfit.ui.activities.MainActivity
 
 val ParentPadding = PaddingValues(vertical = 16.dp, horizontal = 58.dp)
 
@@ -543,6 +544,7 @@ private fun Body(
                 isTopBarVisible = isTopBarVisible
             )
         }
+
         composable(Screens.Search()) {
             SearchScreen(
                 onMovieClick = { movie -> openMovieDetailsScreen(movie.id) },

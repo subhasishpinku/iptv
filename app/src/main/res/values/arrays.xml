@@ -3,14 +3,24 @@
     <array name="category_title">
         <item>@string/main_movie</item>
         <item>@string/main_serial</item>
-        <item>@string/main_person</item>
+        <item>@string/main_news</item>
+        <item>@string/main_sports</item>
+        <item>@string/main_ott</item>
         <item>@string/ott_ply</item>
         <item>@string/main_tv_channel</item>
-        <item>@string/main_hot_star</item>
-        <item>@string/netflix</item>
-        <item>@string/amazon</item>
-        <item>@string/youTub</item>
+        <item>@string/main_devotional</item>
+        <item>@string/main_person</item>
 
+        <item>@string/main_kids</item>
+        <item>@string/main_music</item>
+        <item>@string/main_game</item>
+        <item>@string/main_webWatch</item>
+
+
+        <!--        <item>@string/main_hot_star</item>-->
+<!--        <item>@string/netflix</item>-->
+<!--        <item>@string/amazon</item>-->
+<!--        <item>@string/youTub</item>-->
         <item>@string/main_settings</item>
     </array>
 

@@ -85,10 +85,20 @@ class MainFragment : BrowseSupportFragment() {
             val headerItem = when (title) {
 
                 getString(R.string.main_movie) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.ic_main_movie)
+                    HeaderIconItem(title.uppercase(), R.drawable.movies)
 
                 getString(R.string.main_serial) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.ic_main_serial)
+                    HeaderIconItem(title.uppercase(), R.drawable.tvshow)
+
+
+                getString(R.string.main_news) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.news)
+
+                getString(R.string.main_sports) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.sportss)
+
+                getString(R.string.main_ott) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.ottall)
 
                 getString(R.string.ott_ply) ->
                     HeaderIconItem(title.uppercase(), R.drawable.ott_play)
@@ -99,17 +109,33 @@ class MainFragment : BrowseSupportFragment() {
                 getString(R.string.main_tv_channel) ->
                     HeaderIconItem(title.uppercase(), R.drawable.ic_main_tv_channel)
 
-                getString(R.string.main_hot_star) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.baseline_hotel_class_24)
+                getString(R.string.main_devotional) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.devotional)
 
-                getString(R.string.netflix) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.netflix)
 
-                getString(R.string.amazon) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.amzone_prime)
+                getString(R.string.main_kids) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.kids)
 
-                getString(R.string.youTub) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.youtub)
+                getString(R.string.main_music) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.music)
+
+                getString(R.string.main_game) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.game)
+
+                getString(R.string.main_webWatch) ->
+                    HeaderIconItem(title.uppercase(), R.drawable.webwatch)
+
+//                getString(R.string.main_hot_star) ->
+//                    HeaderIconItem(title.uppercase(), R.drawable.baseline_hotel_class_24)
+//
+//                getString(R.string.netflix) ->
+//                    HeaderIconItem(title.uppercase(), R.drawable.netflix)
+//
+//                getString(R.string.amazon) ->
+//                    HeaderIconItem(title.uppercase(), R.drawable.amzone_prime)
+//
+//                getString(R.string.youTub) ->
+//                    HeaderIconItem(title.uppercase(), R.drawable.youtub)
 
                 getString(R.string.main_settings) -> {
                     mRowsAdapter!!.add(PageRow(HeaderIconItem(" ")))
@@ -136,19 +162,37 @@ class MainFragment : BrowseSupportFragment() {
                 mCashedFragments.containsKey(cachedId) -> {
                     mCashedFragments[cachedId]
                 }
-
                 row.headerItem.name.equals(
-                    context?.getString(R.string.ott_ply), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                    context?.getString(R.string.main_news), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
                 ) -> {
-                    mCashedFragments[cachedId] = OTTPlayFragment(row.headerItem.name)
+                    mCashedFragments[cachedId] = NewsFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
                 row.headerItem.name.equals(
-                    context?.getString(R.string.main_person), true
+                    context?.getString(R.string.main_sports), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
                 ) -> {
-                    mCashedFragments[cachedId] =
-                        MainGridFragment(row.headerItem.name)
+                    mCashedFragments[cachedId] = SportsFragment(row.headerItem.name)
+                    mCashedFragments[cachedId]
+                }
+
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_ott), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+//                ) -> {
+//                    mCashedFragments[cachedId] = OTTAllFragment(row.headerItem.name)
+//                    mCashedFragments[cachedId]
+//                }
+
+                row.headerItem.name.equals(
+                    context?.getString(R.string.main_ott), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                ) -> {
+                    mCashedFragments[cachedId] = DeepLinkFragment(row.headerItem.name)
+                    mCashedFragments[cachedId]
+                }
+                row.headerItem.name.equals(
+                    context?.getString(R.string.ott_ply), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                ) -> {
+                    mCashedFragments[cachedId] = OTTPlayFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
@@ -161,36 +205,80 @@ class MainFragment : BrowseSupportFragment() {
                 }
 
                 row.headerItem.name.equals(
-                    context?.getString(R.string.main_hot_star), true
+                    context?.getString(R.string.main_devotional), true
                 ) -> {
-                    mCashedFragments[cachedId] =
-                        HotStarFragment()
+                    mCashedFragments[cachedId] = DevotionalFragment(row.headerItem.name)  // category পাস
                     mCashedFragments[cachedId]
                 }
 
+
                 row.headerItem.name.equals(
-                    context?.getString(R.string.netflix), true
+                    context?.getString(R.string.main_kids), true
+                ) -> {
+                    mCashedFragments[cachedId] = KidsFragment(row.headerItem.name)  // category পাস
+                    mCashedFragments[cachedId]
+                }
+//
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_kids), true
+//                ) -> {
+//                    mCashedFragments[cachedId] = MusicFragment(row.headerItem.name)  // category পাস
+//                    mCashedFragments[cachedId]
+//                }
+//
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_kids), true
+//                ) -> {
+//                    mCashedFragments[cachedId] = GameFragment(row.headerItem.name)  // category পাস
+//                    mCashedFragments[cachedId]
+//                }
+//
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_kids), true
+//                ) -> {
+//                    mCashedFragments[cachedId] = GameFragment(row.headerItem.name)  // category পাস
+//                    mCashedFragments[cachedId]
+//                }
+
+                row.headerItem.name.equals(
+                    context?.getString(R.string.main_person), true
                 ) -> {
                     mCashedFragments[cachedId] =
-                        NetflixFragment()
+                        MainGridFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
-                row.headerItem.name.equals(
-                    context?.getString(R.string.amazon), true
-                ) -> {
-                    mCashedFragments[cachedId] =
-                        AmazonVideoFragment()
-                    mCashedFragments[cachedId]
-                }
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_hot_star), true
+//                ) -> {
+//                    mCashedFragments[cachedId] =
+//                        HotStarFragment()
+//                    mCashedFragments[cachedId]
+//                }
 
-                row.headerItem.name.equals(
-                    context?.getString(R.string.youTub), true
-                ) -> {
-                    mCashedFragments[cachedId] =
-                        YouTubeFragment()
-                    mCashedFragments[cachedId]
-                }
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.netflix), true
+//                ) -> {
+//                    mCashedFragments[cachedId] =
+//                        NetflixFragment()
+//                    mCashedFragments[cachedId]
+//                }
+
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.amazon), true
+//                ) -> {
+//                    mCashedFragments[cachedId] =
+//                        AmazonVideoFragment()
+//                    mCashedFragments[cachedId]
+//                }
+
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.youTub), true
+//                ) -> {
+//                    mCashedFragments[cachedId] =
+//                        YouTubeFragment()
+//                    mCashedFragments[cachedId]
+//                }
 
                 else -> {
                     mCashedFragments[cachedId] =

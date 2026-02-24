@@ -13,6 +13,7 @@ plugins {
 //    alias(libs.plugins.android.test)
     alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.google.gms.google.services)
+    id("org.jetbrains.kotlin.plugin.parcelize")
 
 }
 
@@ -27,6 +28,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "PARTNER_API_URL", "\"https://partner.app.com\"")
     }
 
     buildTypes {
@@ -36,12 +38,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
         }
     }
 
     buildFeatures {
         viewBinding = false
         dataBinding = false
+        buildConfig = true
+
     }
 
     compileOptions {
@@ -173,7 +178,7 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
-
+    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.0")
     baselineProfile(project(":benchmark"))
 }
 
