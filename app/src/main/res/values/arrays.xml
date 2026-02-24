@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="category_title">
+        <item>@string/main_movie</item>
+        <item>@string/main_serial</item>
+        <item>@string/main_person</item>
+        <item>@string/ott_ply</item>
+        <item>@string/main_tv_channel</item>
+        <item>@string/main_hot_star</item>
+        <item>@string/netflix</item>
+        <item>@string/amazon</item>
+        <item>@string/youTub</item>
+
+        <item>@string/main_settings</item>
+    </array>
+
+</resources>

@@ -1,0 +1,48 @@
+<resources>
+    <!-- Base TV Theme - Now using MaterialComponents -->
+    <style name="Theme.Leanback" parent="@style/Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/red</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowShowWallpaper">false</item>
+
+        <!-- TV specific attributes -->
+        <item name="android:colorBackground">@color/black</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/off_white</item>
+    </style>
+
+    <!-- No ActionBar variant -->
+    <style name="Theme.Leanback.NoActionBar">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!-- Alternative: Bridge theme if you need AppCompat -->
+    <style name="Theme.Leanback.Bridge" parent="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+    </style>
+    <declare-styleable name="CircleProgressBar">
+        <attr name="min" format="integer" />
+        <attr name="max" format="integer" />
+        <attr name="progress" format="integer" />
+        <attr name="progressbarColor" format="color" />
+        <attr name="progressBarThickness" format="dimension" />
+    </declare-styleable>
+    <style name="Theme.TvPlayer" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
+    <style name="AppTheme" parent="@style/Theme.Leanback">
+        <item name="android:windowContentTransitions">true</item>
+        <!--        <item name="browseTitleViewLayout">@layout/title_main</item>-->
+        <!--        <item name="browseRowsMarginTop">@dimen/lb_browse_rows_margin_top</item>-->
+    </style>
+</resources>

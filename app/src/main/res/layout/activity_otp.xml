@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        tools:context=".OTPActivity">
+
+        <!-- Background Image -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/bg_movies"
+            android:scaleType="centerCrop"
+            android:alpha="0.7" />
+
+        <!-- Dark Overlay -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/semi_transparent" />
+
+        <!-- Centered Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <!-- Main Card -->
+            <LinearLayout
+                android:layout_width="560dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:background="@drawable/bg_card"
+                android:elevation="8dp">
+
+                <!-- Back Button - Now Inside Card -->
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/ic_arrow_back"
+                    android:background="@drawable/tv_focusable_bg"
+                    android:padding="16dp"
+                    android:focusable="true"
+                    android:nextFocusDown="@+id/otp1"
+                    android:nextFocusRight="@+id/otp1"
+                    android:contentDescription="@string/back"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OTP Verification"
+                    android:textSize="36sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Subtitle -->
+                <TextView
+                    android:id="@+id/tvSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter the OTP sent to +91 ******7890"
+                    android:textSize="20sp"
+                    android:textColor="@color/off_white"
+                    android:layout_marginBottom="40dp" />
+
+                <!-- OTP Input Fields - All 6 Fields -->
+                <LinearLayout
+                    android:id="@+id/otpLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="32dp">
+
+                    <EditText
+                        android:id="@+id/otp1"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/otp2"
+                        android:nextFocusRight="@+id/otp2"
+                        android:nextFocusLeft="@+id/btnBack"
+                        android:nextFocusUp="@+id/btnBack" />
+
+                    <EditText
+                        android:id="@+id/otp2"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/otp3"
+                        android:nextFocusRight="@+id/otp3"
+                        android:nextFocusLeft="@+id/otp1"
+                        android:nextFocusUp="@+id/otp1" />
+
+                    <EditText
+                        android:id="@+id/otp3"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/otp4"
+                        android:nextFocusRight="@+id/otp4"
+                        android:nextFocusLeft="@+id/otp2"
+                        android:nextFocusUp="@+id/otp2" />
+
+                    <EditText
+                        android:id="@+id/otp4"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/otp5"
+                        android:nextFocusRight="@+id/otp5"
+                        android:nextFocusLeft="@+id/otp3"
+                        android:nextFocusUp="@+id/otp3" />
+
+                    <EditText
+                        android:id="@+id/otp5"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/otp6"
+                        android:nextFocusRight="@+id/otp6"
+                        android:nextFocusLeft="@+id/otp4"
+                        android:nextFocusUp="@+id/otp4" />
+
+                    <EditText
+                        android:id="@+id/otp6"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:background="@drawable/tv_otp_box_selector"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:maxLength="1"
+                        android:textSize="32sp"
+                        android:textColor="@color/white"
+                        android:textColorHint="@color/light_gray"
+                        android:hint="0"
+                        android:focusable="true"
+                        android:nextFocusDown="@+id/btnSubmit"
+                        android:nextFocusRight="@+id/btnSubmit"
+                        android:nextFocusLeft="@+id/otp5"
+                        android:nextFocusUp="@+id/otp5" />
+                </LinearLayout>
+
+                <!-- Timer -->
+                <TextView
+                    android:id="@+id/tvTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:30"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="16dp"
+                    android:layout_gravity="center"
+                    android:focusable="false" />
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+                <!-- Resend -->
+                <TextView
+                    android:id="@+id/tvResend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Resend OTP"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/red"
+                    android:background="@drawable/tv_focusable_text"
+                    android:padding="16dp"
+                    android:visibility="gone"
+                    android:focusable="true"
+                    android:nextFocusUp="@+id/otp6"
+                    android:nextFocusDown="@+id/btnSubmit"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Submit Button -->
+                <Button
+                    android:id="@+id/btnSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:text="Submit"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/red"
+                    android:enabled="false"
+                    android:focusable="true"
+                    android:nextFocusUp="@+id/otp6"
+                    android:nextFocusLeft="@+id/otp6"
+                    android:stateListAnimator="@null"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
