@@ -1,20 +1,31 @@
-package  com.bacbpl.iptv.jetfit.ui.activities
+package com.bacbpl.iptv.jetfit.ui.activities
 
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.View
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.bacbpl.iptv.R
-import  com.bacbpl.iptv.jetfit.ui.fragments.MainFragment
-import  com.bacbpl.iptv.jetfit.utils.DpadController
+import com.bacbpl.iptv.jetfit.ui.fragments.MainFragment
+import com.bacbpl.iptv.jetfit.utils.BackgroundSlideshow
+import com.bacbpl.iptv.jetfit.utils.DpadController
 
 class MainActivity : FragmentActivity() {
 
     var dpadController: DpadController? = null
+    private lateinit var backgroundSlideshow: BackgroundSlideshow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize Background Slideshow
+        val bgImage1 = findViewById<ImageView>(R.id.bg_slideshow_1)
+        val bgImage2 = findViewById<ImageView>(R.id.bg_slideshow_2)
+
+        backgroundSlideshow = BackgroundSlideshow(bgImage1, bgImage2)
+        backgroundSlideshow.start()
 
         // Load MainFragment into the content frame
         supportFragmentManager
@@ -57,5 +68,23 @@ class MainActivity : FragmentActivity() {
         } else {
             super.onKeyUp(keyCode, event)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Resume slideshow when activity resumes
+        backgroundSlideshow.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Stop slideshow when activity pauses to save resources
+        backgroundSlideshow.stop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up
+        backgroundSlideshow.stop()
     }
 }

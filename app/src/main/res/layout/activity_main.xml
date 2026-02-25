@@ -4,6 +4,37 @@
     android:layout_width="match_parent"
     android:background="@color/default_background_dark"
     android:layout_height="match_parent">
+
+    <!-- Background Slideshow Container -->
+    <FrameLayout
+        android:id="@+id/bg_slideshow_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Background Image 1 -->
+        <ImageView
+            android:id="@+id/bg_slideshow_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="visible" />
+
+        <!-- Background Image 2 (for crossfade) -->
+        <ImageView
+            android:id="@+id/bg_slideshow_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <!-- Dark Overlay to make content readable -->
+        <View
+            android:id="@+id/bg_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#AA000000" />
+    </FrameLayout>
+
     <FrameLayout
         android:id="@+id/video_bg"
         android:focusableInTouchMode="false"
@@ -11,6 +42,7 @@
         android:foreground="@null"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
     <RelativeLayout
         android:visibility="gone"
         android:background="@color/tr_dark"
@@ -22,6 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
     </RelativeLayout>
+
     <ScrollView
         android:scrollbars="none"
         android:focusable="false"
@@ -50,10 +83,12 @@
                 android:layout_height="540dp"/>
         </LinearLayout>
     </ScrollView>
+
     <FrameLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
     <LinearLayout
         android:visibility="gone"
         android:id="@+id/drawer_top"
@@ -83,6 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
+
     <RelativeLayout
         android:visibility="gone"
         android:id="@+id/drawer_bottom_bg"
@@ -101,6 +137,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </RelativeLayout>
+
     <RelativeLayout
         android:id="@+id/drawer_bottom"
         android:paddingBottom="5dp"
@@ -117,6 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </RelativeLayout>
+
     <ProgressBar
         android:id="@+id/progress_main"
         android:visibility="gone"
@@ -126,7 +164,9 @@
         android:indeterminateTint="@color/default_accent"
         android:layout_width="match_parent"
         android:layout_height="15dp" />
+
     <RelativeLayout
+        android:visibility="gone"
         android:id="@+id/dpad_container"
         android:transitionGroup="true"
         android:transitionName="dpad"
@@ -137,4 +177,5 @@
         android:layout_height="140dp">
         <include layout="@layout/include_dpad_control"/>
     </RelativeLayout>
+
 </RelativeLayout>

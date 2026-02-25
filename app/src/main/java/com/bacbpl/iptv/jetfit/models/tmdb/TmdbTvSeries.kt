@@ -23,5 +23,26 @@ data class TmdbTvSeries(
     val status: String?,
     val homepage: String?,
     @SerializedName("videos")
-    val videoResults: TmdbVideoResponse? = null  // Add this line
+    val videoResults: TmdbVideoResponse? = null,
+    // নতুন ফিল্ড যোগ করুন
+    @SerializedName("number_of_seasons")
+    val numberOfSeasons: Int? = null,
+    @SerializedName("number_of_episodes")
+    val numberOfEpisodes: Int? = null,
+    @SerializedName("seasons")
+    val seasons: List<TmdbSeason>? = null
+) : Serializable
+
+// Season এর জন্য নতুন ডাটা ক্লাস
+data class TmdbSeason(
+    val id: Int,
+    val name: String,
+    @SerializedName("season_number")
+    val seasonNumber: Int,
+    @SerializedName("episode_count")
+    val episodeCount: Int,
+    @SerializedName("air_date")
+    val airDate: String?,
+    @SerializedName("poster_path")
+    val posterPath: String?
 ) : Serializable

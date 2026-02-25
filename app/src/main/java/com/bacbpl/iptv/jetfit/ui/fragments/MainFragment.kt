@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.ContextCompat
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.widget.*
@@ -39,12 +38,8 @@ class MainFragment : BrowseSupportFragment() {
             R.color.default_background
         )
 
-        // Search affordance transparent করুন
-        searchAffordanceColors = SearchOrbView.Colors(
-            ContextCompat.getColor(requireContext(), android.R.color.transparent),
-            ContextCompat.getColor(requireContext(), android.R.color.transparent),
-            ContextCompat.getColor(requireContext(), android.R.color.transparent)
-        )
+        // সার্চ অ্যাফোর্ডেন্স সম্পূর্ণ সরানো হয়েছে
+        // searchAffordanceColors লাইনটি ডিলিট করা হয়েছে
 
         setHeaderPresenterSelector(object : PresenterSelector() {
             override fun getPresenter(o: Any): Presenter {
@@ -52,20 +47,22 @@ class MainFragment : BrowseSupportFragment() {
             }
         })
 
-        // Search listener সেট করুন (কিন্তু transparent থাকায় দেখা যাবে না)
-        setOnSearchClickedListener {
-            // কিছু করবেন না
-        }
+        // সার্চ লিসেনার সরানো হয়েছে (কমেন্ট আউট)
+        // setOnSearchClickedListener { }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // নিশ্চিত করুন Search বাটন দেখা যাচ্ছে না
+        // সার্চ বাটন visibility GONE করার কোড
         view.post {
             try {
                 val searchOrb = view.findViewById<View>(androidx.leanback.R.id.title_orb)
                 searchOrb?.visibility = View.GONE
+
+                // যদি title_orb না পাওয়া যায়, তাহলে alternative আইডি চেষ্টা করুন
+                val searchAffordance = view.findViewById<View>(androidx.leanback.R.id.search_orb)
+                searchAffordance?.visibility = View.GONE
             } catch (e: Exception) {
                 Log.e("MainFragment", "Error hiding search button", e)
             }
@@ -125,18 +122,6 @@ class MainFragment : BrowseSupportFragment() {
                 getString(R.string.main_webWatch) ->
                     HeaderIconItem(title.uppercase(), R.drawable.webwatch)
 
-//                getString(R.string.main_hot_star) ->
-//                    HeaderIconItem(title.uppercase(), R.drawable.baseline_hotel_class_24)
-//
-//                getString(R.string.netflix) ->
-//                    HeaderIconItem(title.uppercase(), R.drawable.netflix)
-//
-//                getString(R.string.amazon) ->
-//                    HeaderIconItem(title.uppercase(), R.drawable.amzone_prime)
-//
-//                getString(R.string.youTub) ->
-//                    HeaderIconItem(title.uppercase(), R.drawable.youtub)
-
                 getString(R.string.main_settings) -> {
                     mRowsAdapter!!.add(PageRow(HeaderIconItem(" ")))
                     HeaderIconItem(title.uppercase(), R.drawable.ic_main_settings)
@@ -163,34 +148,27 @@ class MainFragment : BrowseSupportFragment() {
                     mCashedFragments[cachedId]
                 }
                 row.headerItem.name.equals(
-                    context?.getString(R.string.main_news), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                    context?.getString(R.string.main_news), true
                 ) -> {
                     mCashedFragments[cachedId] = NewsFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
                 row.headerItem.name.equals(
-                    context?.getString(R.string.main_sports), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                    context?.getString(R.string.main_sports), true
                 ) -> {
                     mCashedFragments[cachedId] = SportsFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.main_ott), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
-//                ) -> {
-//                    mCashedFragments[cachedId] = OTTAllFragment(row.headerItem.name)
-//                    mCashedFragments[cachedId]
-//                }
-
                 row.headerItem.name.equals(
-                    context?.getString(R.string.main_ott), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                    context?.getString(R.string.main_ott), true
                 ) -> {
                     mCashedFragments[cachedId] = DeepLinkFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
                 row.headerItem.name.equals(
-                    context?.getString(R.string.ott_ply), true // R.string.ott_play = "OTTplay" (strings.xml-তে যোগ করুন)
+                    context?.getString(R.string.ott_ply), true
                 ) -> {
                     mCashedFragments[cachedId] = OTTPlayFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
@@ -207,7 +185,7 @@ class MainFragment : BrowseSupportFragment() {
                 row.headerItem.name.equals(
                     context?.getString(R.string.main_devotional), true
                 ) -> {
-                    mCashedFragments[cachedId] = DevotionalFragment(row.headerItem.name)  // category পাস
+                    mCashedFragments[cachedId] = DevotionalFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
 
@@ -215,30 +193,9 @@ class MainFragment : BrowseSupportFragment() {
                 row.headerItem.name.equals(
                     context?.getString(R.string.main_kids), true
                 ) -> {
-                    mCashedFragments[cachedId] = KidsFragment(row.headerItem.name)  // category পাস
+                    mCashedFragments[cachedId] = KidsFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
-//
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.main_kids), true
-//                ) -> {
-//                    mCashedFragments[cachedId] = MusicFragment(row.headerItem.name)  // category পাস
-//                    mCashedFragments[cachedId]
-//                }
-//
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.main_kids), true
-//                ) -> {
-//                    mCashedFragments[cachedId] = GameFragment(row.headerItem.name)  // category পাস
-//                    mCashedFragments[cachedId]
-//                }
-//
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.main_kids), true
-//                ) -> {
-//                    mCashedFragments[cachedId] = GameFragment(row.headerItem.name)  // category পাস
-//                    mCashedFragments[cachedId]
-//                }
 
                 row.headerItem.name.equals(
                     context?.getString(R.string.main_person), true
@@ -247,38 +204,6 @@ class MainFragment : BrowseSupportFragment() {
                         MainGridFragment(row.headerItem.name)
                     mCashedFragments[cachedId]
                 }
-
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.main_hot_star), true
-//                ) -> {
-//                    mCashedFragments[cachedId] =
-//                        HotStarFragment()
-//                    mCashedFragments[cachedId]
-//                }
-
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.netflix), true
-//                ) -> {
-//                    mCashedFragments[cachedId] =
-//                        NetflixFragment()
-//                    mCashedFragments[cachedId]
-//                }
-
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.amazon), true
-//                ) -> {
-//                    mCashedFragments[cachedId] =
-//                        AmazonVideoFragment()
-//                    mCashedFragments[cachedId]
-//                }
-
-//                row.headerItem.name.equals(
-//                    context?.getString(R.string.youTub), true
-//                ) -> {
-//                    mCashedFragments[cachedId] =
-//                        YouTubeFragment()
-//                    mCashedFragments[cachedId]
-//                }
 
                 else -> {
                     mCashedFragments[cachedId] =

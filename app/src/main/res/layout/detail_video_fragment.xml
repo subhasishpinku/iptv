@@ -6,6 +6,7 @@
     android:foreground="@null"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <RelativeLayout
         android:id="@+id/video_container"
         android:focusable="false"
@@ -13,6 +14,7 @@
         android:foreground="@null"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <VideoView
             android:id="@+id/video_view"
             android:focusable="false"
@@ -22,16 +24,21 @@
             android:layout_centerInParent="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-<!--        <com.google.android.exoplayer2.ui.PlayerView-->
-<!--            android:id="@+id/player_view"-->
-<!--            android:visibility="gone"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            app:use_controller="false" />-->
-        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-            android:id="@+id/youtube_player"
+
+        <WebView
+            android:id="@+id/youtube_webview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            style="@android:style/Widget.ProgressBar.Large" />
+
         <ImageView
             android:id="@+id/video_action_icon"
             android:focusable="false"
@@ -43,6 +50,7 @@
             android:src="@drawable/ic_player_action_play"
             android:layout_width="@dimen/video_icon_size"
             android:layout_height="@dimen/video_icon_size" />
+
         <TextView
             android:id="@+id/video_action_text"
             android:focusable="false"
@@ -54,6 +62,7 @@
             android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
         <LinearLayout
             android:id="@+id/video_seek_container"
             android:orientation="horizontal"
@@ -62,6 +71,7 @@
             android:layout_margin="@dimen/lb_browse_padding_start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 android:id="@+id/video_curtime"
                 android:textColor="@color/card_secondary_text"
@@ -72,6 +82,7 @@
                 android:shadowRadius="2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
+
             <SeekBar
                 android:id="@+id/video_seekbar"
                 android:layout_marginStart="@dimen/lb_action_text_size"
@@ -81,6 +92,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"/>
+
             <TextView
                 android:id="@+id/video_duration"
                 android:textColor="@color/card_secondary_text"

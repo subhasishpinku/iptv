@@ -27,4 +27,6 @@
     <dimen name="lb_details_description_title_resized_text_size">32dp</dimen><!--TITLE-->
     <dimen name="lb_details_description_subtitle_text_size">22dp</dimen><!--SUBTITLE-->
     <dimen name="lb_details_description_body_text_size">18dp</dimen><!--DESCRIPTION-->
+
+
 </resources>
