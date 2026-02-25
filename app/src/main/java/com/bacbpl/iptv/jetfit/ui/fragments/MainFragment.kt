@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.leanback.app.BrowseSupportFragment
@@ -60,11 +61,24 @@ class MainFragment : BrowseSupportFragment() {
                 val searchOrb = view.findViewById<View>(androidx.leanback.R.id.title_orb)
                 searchOrb?.visibility = View.GONE
 
-                // যদি title_orb না পাওয়া যায়, তাহলে alternative আইডি চেষ্টা করুন
                 val searchAffordance = view.findViewById<View>(androidx.leanback.R.id.search_orb)
                 searchAffordance?.visibility = View.GONE
+
+                // হেডার কন্টেইনারের মার্জিন অ্যাডজাস্ট করুন
+                val headersFragment = headersSupportFragment
+                headersFragment?.view?.apply {
+                    // হেডারের উপরের প্যাডিং সরান
+                    setPadding(0, 0, 0, 0)
+
+                    // হেডারের লেআউট প্যারামিটার অ্যাডজাস্ট করুন
+                    val layoutParams = layoutParams as? ViewGroup.MarginLayoutParams
+                    layoutParams?.topMargin = 0
+                    layoutParams?.bottomMargin = 0
+                    requestLayout()
+                }
+
             } catch (e: Exception) {
-                Log.e("MainFragment", "Error hiding search button", e)
+                Log.e("MainFragment", "Error adjusting headers", e)
             }
         }
     }
