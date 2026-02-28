@@ -19,9 +19,8 @@ import com.bacbpl.iptv.jetfit.ui.activities.TvPlayersActivity
 import com.bacbpl.iptv.jetfit.ui.presenters.BaseImageCardPresenter
 import com.bumptech.glide.Glide
 
-class DevotionalFragment(private val category: String) :
-    VerticalGridSupportFragment(),
-    BrowseSupportFragment.MainFragmentAdapterProvider {
+class DevotionalFragment(private val category: String) : BaseVerticalGridFragment(category) {
+
 
     private val mainFragmentAdapter = BrowseSupportFragment.MainFragmentAdapter(this)
     private lateinit var mAdapter: ArrayObjectAdapter
@@ -49,12 +48,14 @@ class DevotionalFragment(private val category: String) :
     }
 
     override fun onStart() {
-        super.onStart()
-        view?.setBackgroundColor(
-            ContextCompat.getColor(requireContext(), R.color.default_background)
-        )
+        try {
+            super.onStart()
+            view?.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.default_background)
+            )
+        } catch (e: Exception) {
+        }
     }
-
     private fun loadDevotionalChannels() {
         // ধর্মীয় চ্যানেলের তালিকা
         val channels = listOf(
@@ -208,4 +209,6 @@ class DevotionalFragment(private val category: String) :
             }
         }
     }
+
+
 }

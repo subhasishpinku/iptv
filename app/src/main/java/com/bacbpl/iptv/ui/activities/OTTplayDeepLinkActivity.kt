@@ -1,285 +1,323 @@
-package com.bacbpl.iptv.jetfit.ui.activities
+package com.bacbpl.iptv.ui.activities
 
 import android.annotation.SuppressLint
-import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.CookieManager
+import android.webkit.WebStorage
+import android.widget.FrameLayout
 import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import com.bacbpl.iptv.BuildConfig
 import com.bacbpl.iptv.R
-import com.bacbpl.iptv.jetfit.utils.deeplink.DeepLinkHandler
-import com.bacbpl.iptv.jetfit.utils.deeplink.DeepLinkParams
-import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
+import java.io.File
 
 class OTTplayDeepLinkActivity : AppCompatActivity() {
 
-    companion object {
-        private const val TAG = "OTTplayDeepLink"
-    }
-
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
-    private lateinit var btnBackToPartner: MaterialButton
-    private lateinit var tvAppName: TextView
-    private lateinit var tvLoading: TextView
+    private lateinit var videoContainer: FrameLayout
+    private var customView: View? = null
+    private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+    private var originalOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    private var webChromeClient: MyWebChromeClient? = null
 
-    private var deepLinkParams: DeepLinkParams? = null
-    private lateinit var deepLinkHandler: DeepLinkHandler
+    // Add cache management
+    private var isPageLoaded = false
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_ottplay_deeplink)
+        setContentView(R.layout.activity_ottplay_deep_link)
 
-        initViews()
-        setupDeepLinkHandler()
-        processIntent()
-    }
-
-    private fun initViews() {
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
-        btnBackToPartner = findViewById(R.id.btnBackToPartner)
-        tvAppName = findViewById(R.id.tvAppName)
-        tvLoading = findViewById(R.id.tvLoading)
+        videoContainer = findViewById(R.id.videoContainer)
 
-        btnBackToPartner.setOnClickListener {
-            navigateBackToPartner()
+        setupOptimizedWebView()
+
+        val deepLink = intent.dataString
+        if (deepLink != null) {
+            loadUrlOptimized(deepLink)
+        } else {
+            Toast.makeText(this, "No URL provided", Toast.LENGTH_SHORT).show()
+            finish()
         }
-    }
-
-    private fun setupDeepLinkHandler() {
-        deepLinkHandler = DeepLinkHandler(this)
-    }
-
-    private fun processIntent() {
-        when (intent?.action) {
-            Intent.ACTION_VIEW -> {
-                intent.data?.let { uri ->
-                    parseAndProcessDeepLink(uri)
-                } ?: run {
-                    showErrorAndFinish("No deep link data found")
-                }
-            }
-            else -> {
-                val testUrl = intent.getStringExtra("test_url")
-                if (!testUrl.isNullOrEmpty()) {
-                    loadInWebView(testUrl)
-                } else {
-                    showErrorAndFinish("Invalid intent action")
-                }
-            }
-        }
-    }
-
-    private fun parseAndProcessDeepLink(uri: Uri) {
-        showLoading(true)
-
-        val params = deepLinkHandler.parseDeepLink(uri)
-
-        if (params == null) {
-            showLoading(false)
-            showErrorAndFinish("Invalid deep link format")
-            return
-        }
-
-        deepLinkParams = params
-        tvAppName.text = "Back to ${params.appName}"
-
-        // টোকেন ভ্যালিডেট করুন
-        validateToken(params)
-    }
-
-    private fun validateToken(params: DeepLinkParams) {
-        lifecycleScope.launch {
-            // ✅ সঠিক ফাংশন কল (callback ভার্সন না, suspend ভার্সন)
-            val result = deepLinkHandler.validatePartnerTokenSuspend(params.token)
-
-            when (result) {
-                is DeepLinkHandler.PartnerTokenValidationResult.Valid -> {
-                    showLoading(false)
-                    loadOTTplayContent(params, result)
-                }
-                is DeepLinkHandler.PartnerTokenValidationResult.Invalid -> {
-                    showLoading(false)
-                    showErrorAndFinish("Invalid token: ${result.message}")
-                }
-                is DeepLinkHandler.PartnerTokenValidationResult.Error -> {
-                    showLoading(false)
-                    showErrorAndFinish("Error: ${result.message}")
-                }
-            }
-        }
-    }
-
-    private fun loadOTTplayContent(
-        params: DeepLinkParams,
-        userData: DeepLinkHandler.PartnerTokenValidationResult.Valid
-    ) {
-        Log.d(TAG, "User validated: ${userData.name}, ${userData.mobile}")
-        loadInWebView(params.contentUrl)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun loadInWebView(url: String) {
-        webView.visibility = View.VISIBLE
-        btnBackToPartner.visibility = View.VISIBLE
+    private fun setupOptimizedWebView() {
+        val webSettings = webView.settings
 
-        webView.settings.apply {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            allowContentAccess = true
-            allowFileAccess = true
-            allowUniversalAccessFromFileURLs = true
-            builtInZoomControls = true
-            displayZoomControls = false
-            useWideViewPort = true
-            loadWithOverviewMode = true
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                safeBrowsingEnabled = true
+        // Essential settings only
+        webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true
+        webSettings.loadWithOverviewMode = true
+        webSettings.useWideViewPort = true
+
+        // For Android 7.1.2, use standard cache mode
+        webSettings.cacheMode = WebSettings.LOAD_DEFAULT // Use LOAD_DEFAULT instead of CACHE_ELSE_NETWORK for better compatibility
+
+        // Enable localStorage
+        webSettings.databaseEnabled = true
+
+        // Set cache size via WebView database quota
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onExceededDatabaseQuota(url: String, databaseIdentifier: String,
+                                                 currentQuota: Long, estimatedSize: Long,
+                                                 totalUsedQuota: Long, quotaUpdater: WebStorage.QuotaUpdater) {
+                // Allow up to 50MB
+                quotaUpdater.updateQuota(50 * 1024 * 1024)
             }
         }
+
+        // Enable mixed content but with caution
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+        }
+
+        // Disable features that slow down older devices
+        webSettings.setSupportZoom(false)
+        webSettings.builtInZoomControls = false
+        webSettings.displayZoomControls = false
+        webSettings.allowFileAccess = false
+        webSettings.allowContentAccess = false
+
+        // Video settings
+        webSettings.mediaPlaybackRequiresUserGesture = true // Better performance
+
+        // Use software rendering for Android 7.1.2 if needed
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1) {
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        } else {
+            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        }
+
+        webChromeClient = MyWebChromeClient()
+        webView.webChromeClient = webChromeClient
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 progressBar.visibility = View.VISIBLE
-                tvLoading.visibility = View.GONE
+                isPageLoaded = false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
-                injectBackButtonScript()
+                if (!isPageLoaded) {
+                    injectMinimalVideoHandlerJS()
+                    isPageLoaded = true
+                }
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                request?.url?.let { uri ->
-                    if (uri.toString().startsWith("ottplay://") ||
-                        uri.toString().contains("ottplay.com/auth")) {
-                        handleOTTplayDeepLink(uri)
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                if (url != null) {
+                    // Handle video URLs
+                    if (url.contains(".mp4") || url.contains(".m3u8") ||
+                        url.contains(".mkv") || url.contains(".webm")) {
+                        playVideoDirectly(url)
                         return true
                     }
 
-                    deepLinkParams?.backUrl?.let { backUrl ->
-                        if (uri.toString().startsWith(backUrl)) {
-                            navigateBackToPartner()
-                            return true
-                        }
+                    // Load all other URLs in WebView
+                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                        view?.loadUrl(url)
+                        return true
                     }
                 }
                 return false
             }
-        }
 
-        webView.webChromeClient = object : WebChromeClient() {
-            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                progressBar.progress = newProgress
+            override fun onLoadResource(view: WebView?, url: String?) {
+                super.onLoadResource(view, url)
+                url?.let {
+                    if (it.contains(".mp4") || it.contains(".m3u8")) {
+                        Log.d("OTTplay", "Video: $it")
+                    }
+                }
             }
         }
 
-        // ✅ JavaScript ইন্টারফেস যোগ করুন
-        webView.addJavascriptInterface(JavaScriptInterface(), "Android")
-
-        Log.d(TAG, "Loading URL: $url")
-        webView.loadUrl(url)
+        // Enable debugging only in debug builds
+        if (BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
     }
 
-    private fun injectBackButtonScript() {
-        val appName = deepLinkParams?.appName ?: "Partner"
-        val script = """
+    inner class MyWebChromeClient : WebChromeClient() {
+        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+            progressBar.progress = newProgress
+            if (newProgress >= 90) {
+                progressBar.visibility = View.GONE
+            } else {
+                progressBar.visibility = View.VISIBLE
+            }
+        }
+
+        override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+            if (customView != null) {
+                callback?.onCustomViewHidden()
+                return
+            }
+
+            customView = view
+            customViewCallback = callback
+
+            webView.visibility = View.GONE
+            videoContainer.visibility = View.VISIBLE
+            videoContainer.addView(view)
+
+            originalOrientation = requestedOrientation
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+
+        override fun onHideCustomView() {
+            customView?.let {
+                videoContainer.removeView(it)
+                customView = null
+            }
+            customViewCallback?.onCustomViewHidden()
+            customViewCallback = null
+
+            webView.visibility = View.VISIBLE
+            videoContainer.visibility = View.GONE
+            requestedOrientation = originalOrientation
+        }
+
+        override fun getVideoLoadingProgressView(): View? {
+            return layoutInflater.inflate(R.layout.video_loading_progress, null)
+        }
+    }
+
+    private fun injectMinimalVideoHandlerJS() {
+        val jsCode = """
             javascript:(function() {
-                var existingBtn = document.getElementById('ottplay-back-btn');
-                if (existingBtn) return;
-                
-                var backButton = document.createElement('div');
-                backButton.innerHTML = '<button id="ottplay-back-btn" style="position:fixed; bottom:20px; right:20px; z-index:9999; padding:12px 24px; background:#6200EE; color:white; border:none; border-radius:25px; font-size:16px; box-shadow:0 4px 8px rgba(0,0,0,0.3); cursor:pointer;">← Back to $appName</button>';
-                
-                document.body.appendChild(backButton);
-                
-                document.getElementById('ottplay-back-btn').onclick = function() {
-                    Android.backToPartner();
-                };
+                try {
+                    // Add minimal video controls
+                    var videos = document.getElementsByTagName('video');
+                    for(var i = 0; i < videos.length; i++) {
+                        videos[i].setAttribute('controls', 'true');
+                        videos[i].setAttribute('playsinline', 'true');
+                        videos[i].setAttribute('webkit-playsinline', 'true');
+                    }
+                    
+                    // Make elements focusable for DPAD
+                    var elements = document.querySelectorAll('button, a, .play-button, [role="button"]');
+                    for(var i = 0; i < elements.length; i++) {
+                        elements[i].setAttribute('tabindex', '0');
+                    }
+                } catch(e) {
+                    console.log('Error: ' + e);
+                }
             })();
         """.trimIndent()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(script, null)
-        } else {
-            webView.loadUrl(script)
+        webView.loadUrl(jsCode)
+    }
+
+    private fun loadUrlOptimized(url: String) {
+        try {
+            if (isPageLoaded) {
+                webView.reload()
+            } else {
+                webView.loadUrl(url)
+            }
+        } catch (e: Exception) {
+            Log.e("OTTplay", "Error loading URL: ${e.message}")
+            Toast.makeText(this, "Error loading content", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun handleOTTplayDeepLink(uri: Uri) {
-        Log.d(TAG, "Handling OTTplay deep link: $uri")
+    private fun playVideoDirectly(videoUrl: String) {
+        try {
+            val videoType = when {
+                videoUrl.contains(".m3u8") -> "application/x-mpegURL"
+                videoUrl.contains(".mp4") -> "video/mp4"
+                videoUrl.contains(".webm") -> "video/webm"
+                else -> "video/mp4"
+            }
 
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        intent.setPackage("com.ottplay.app")
+            val videoHtml = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { margin:0; padding:0; background:black; }
+                        video { width:100%; height:100%; }
+                    </style>
+                </head>
+                <body>
+                    <video controls autoplay>
+                        <source src="$videoUrl" type="$videoType">
+                    </video>
+                </body>
+                </html>
+            """.trimIndent()
 
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-            finish()
-        } else {
-            Toast.makeText(this, "OTTplay app not installed", Toast.LENGTH_SHORT).show()
+            webView.loadDataWithBaseURL(null, videoHtml, "text/html", "UTF-8", null)
+        } catch (e: Exception) {
+            Log.e("OTTplay", "Error playing video: ${e.message}")
+            Toast.makeText(this, "Error playing video", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun navigateBackToPartner() {
-        deepLinkParams?.backUrl?.let { backUrl ->
-            Log.d(TAG, "Navigating back to partner: $backUrl")
-
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(backUrl))
-                startActivity(intent)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error navigating back: ${e.message}")
-                Toast.makeText(this, "Cannot navigate back to partner app", Toast.LENGTH_SHORT).show()
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                webView.loadUrl("javascript:document.activeElement?.click()")
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                webView.loadUrl("javascript:document.querySelector('video')?.paused ? document.querySelector('video')?.play() : document.querySelector('video')?.pause()")
+                return true
+            }
+            KeyEvent.KEYCODE_BACK -> {
+                if (customView != null) {
+                    webChromeClient?.onHideCustomView()
+                    return true
+                }
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                    return true
+                }
             }
         }
-        finish()
+        return super.onKeyDown(keyCode, event)
     }
 
-    private fun showLoading(show: Boolean) {
-        if (show) {
-            progressBar.visibility = View.VISIBLE
-            tvLoading.visibility = View.VISIBLE
-            webView.visibility = View.GONE
-            btnBackToPartner.visibility = View.GONE
-        } else {
-            progressBar.visibility = View.GONE
-            tvLoading.visibility = View.GONE
-        }
+    override fun onPause() {
+        super.onPause()
+        webView.onPause()
+        webView.loadUrl("javascript:document.querySelector('video')?.pause()")
     }
 
-    private fun showErrorAndFinish(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        Log.e(TAG, message)
-        finish()
+    override fun onResume() {
+        super.onResume()
+        webView.onResume()
     }
 
-    override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
-    }
-
-    private inner class JavaScriptInterface {
-        @android.webkit.JavascriptInterface
-        fun backToPartner() {
-            runOnUiThread {
-                navigateBackToPartner()
+    override fun onDestroy() {
+        try {
+            if (customView != null) {
+                webChromeClient?.onHideCustomView()
             }
+            webView.stopLoading()
+            webView.destroy()
+        } catch (e: Exception) {
+            Log.e("OTTplay", "Error in onDestroy: ${e.message}")
         }
+        super.onDestroy()
     }
 }

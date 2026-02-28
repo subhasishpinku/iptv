@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.*
@@ -112,6 +113,19 @@ class OTTPlayFragment(private val category: String) :
             } catch (e: Exception) {
                 Log.e("OTTPlayFragment", "Error binding data: ${e.message}")
             }
+        }
+    }
+
+    override fun onStart() {
+        try {
+            super.onStart()
+            // শুধু ব্যাকগ্রাউন্ড সেট করুন
+            view?.let {
+                it.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.default_background)
+                )
+            }
+        } catch (e: Exception) {
         }
     }
 }

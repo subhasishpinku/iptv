@@ -9,13 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.bacbpl.iptv.JetStreamActivity
+import com.bacbpl.iptv.jetStram.presentation.screens.home.HomeScreen
 
 @Composable
 fun JetStreamActivityLauncher() {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        val intent = Intent(context, JetStreamActivity::class.java)
+        val intent = Intent(context, HomeScreen()::class.java)
         context.startActivity(intent)
     }
 

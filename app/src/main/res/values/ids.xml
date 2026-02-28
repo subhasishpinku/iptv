@@ -16,4 +16,6 @@
 
     <item name="type_badge" type="id"/>
     <item name="ottplay_badge" type="id"/>
+
+    <item name="provider_badge" type="id" />
 </resources>

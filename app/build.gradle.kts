@@ -179,6 +179,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
     implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.0")
+
+
     baselineProfile(project(":benchmark"))
 }
 

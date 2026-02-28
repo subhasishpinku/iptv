@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-package com.bacbpl.iptv.jetStram.presentation.theme // ktlint-disable filename
+package com.bacbpl.iptv.jetStram.presentation.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import com.bacbpl.iptv.R
+
+// Define custom colors
+val Black = Color(0xFF000000)
+val DarkGray = Color(0xFF121212)
+val MediumGray = Color(0xFF1E1E1E)
+val LightGray = Color(0xFF2A2A2A)
+val White = Color(0xFFFFFFFF)
 
 private val darkColorScheme @Composable get() = darkColorScheme(
     primary = colorResource(R.color.primary),
@@ -35,17 +43,25 @@ private val darkColorScheme @Composable get() = darkColorScheme(
     onTertiary = colorResource(R.color.onTertiary),
     tertiaryContainer = colorResource(R.color.tertiaryContainer),
     onTertiaryContainer = colorResource(R.color.onTertiaryContainer),
-    background = colorResource(R.color.background),
-    onBackground = colorResource(R.color.onBackground),
-    surface = colorResource(R.color.surface),
-    onSurface = colorResource(R.color.onSurface),
-    surfaceVariant = colorResource(R.color.surfaceVariant),
-    onSurfaceVariant = colorResource(R.color.onSurfaceVariant),
-    error = colorResource(R.color.error),
-    onError = colorResource(R.color.onError),
-    errorContainer = colorResource(R.color.errorContainer),
-    onErrorContainer = colorResource(R.color.onErrorContainer),
-    border = colorResource(R.color.border),
+
+    // Background colors
+    background = Black,
+    onBackground = White,
+
+    // Surface colors
+    surface = DarkGray,
+    onSurface = White,
+    surfaceVariant = LightGray,
+    onSurfaceVariant = White.copy(alpha = 0.7f),
+
+    // Error colors
+    error = Color(0xFFCF6679),
+    onError = Black,
+    errorContainer = Color(0xFFB00020),
+    onErrorContainer = White,
+
+    // Border
+    border = White.copy(alpha = 0.12f),
 )
 
 @Composable

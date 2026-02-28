@@ -58,6 +58,8 @@ package  com.bacbpl.iptv.jetfit.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.leanback.app.BrowseSupportFragment
 import androidx.leanback.app.VerticalGridSupportFragment
 
@@ -212,5 +214,17 @@ class TvChannelGridFragment :
             "http://192.168.1.8:8080/banners/dhurandar/dhurandhar1763462432_2.jpeg",
             "http://192.168.1.11:8080/vod/vod_dhurandar/dh1.mp4"
         ))
+    }
+    override fun onStart() {
+        try {
+            super.onStart()
+            // শুধু ব্যাকগ্রাউন্ড সেট করুন
+            view?.let {
+                it.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.default_background)
+                )
+            }
+        } catch (e: Exception) {
+        }
     }
 }

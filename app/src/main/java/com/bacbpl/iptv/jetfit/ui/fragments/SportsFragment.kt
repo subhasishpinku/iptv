@@ -1,7 +1,5 @@
 package com.bacbpl.iptv.jetfit.ui.fragments
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
@@ -9,34 +7,26 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.leanback.app.BrowseSupportFragment
-import androidx.leanback.app.VerticalGridSupportFragment
 import androidx.leanback.widget.*
 import com.bacbpl.iptv.R
 import com.bacbpl.iptv.jetfit.ui.presenters.BaseImageCardPresenter
 import com.bumptech.glide.Glide
 
-class SportsFragment(private val category: String) :
-    VerticalGridSupportFragment(),
-    BrowseSupportFragment.MainFragmentAdapterProvider {
+class SportsFragment(private val category: String) : BaseVerticalGridFragment(category) {
 
-    private val mainFragmentAdapter = BrowseSupportFragment.MainFragmentAdapter(this)
     private lateinit var mAdapter: ArrayObjectAdapter
 
     companion object {
         private const val TAG = "SportsFragment"
     }
 
-    override fun getMainFragmentAdapter(): BrowseSupportFragment.MainFragmentAdapter<*> = mainFragmentAdapter
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         title = category.ifEmpty { "SPORTS" }
 
-        // গ্রিড প্রেজেন্টার সেটআপ
         gridPresenter = VerticalGridPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM).apply {
-            numberOfColumns = 6 // স্পোর্টসের জন্য ২ কলাম
+            numberOfColumns = 6
         }
 
         mAdapter = ArrayObjectAdapter(SportsItemPresenter())
@@ -45,15 +35,7 @@ class SportsFragment(private val category: String) :
         loadSportsData()
     }
 
-    override fun onStart() {
-        super.onStart()
-        view?.setBackgroundColor(
-            ContextCompat.getColor(requireContext(), R.color.default_background)
-        )
-    }
-
     private fun loadSportsData() {
-        // ডেমো স্পোর্টস ডাটা - আপনার API কল এখানে যোগ করুন
         val sportsList = listOf(
             SportsItem(
                 title = "IPL 2024 Schedule",
@@ -117,12 +99,21 @@ class SportsFragment(private val category: String) :
             mAdapter.add(sports)
         }
     }
-
-    // স্পোর্টস আইটেমের জন্য Presenter
+    override fun onStart() {
+        try {
+            super.onStart()
+            // শুধু ব্যাকগ্রাউন্ড সেট করুন
+            view?.let {
+                it.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.default_background)
+                )
+            }
+        } catch (e: Exception) {
+        }
+    }
     private inner class SportsItemPresenter : BaseImageCardPresenter<SportsItem>(400, 350) {
         override fun bindData(container: FrameLayout, imageView: ImageView, data: SportsItem) {
             try {
-                // ইমেজ লোড করুন
                 Glide.with(container.context)
                     .load(data.imageUrl)
                     .centerCrop()
@@ -130,14 +121,11 @@ class SportsFragment(private val category: String) :
                     .error(android.R.color.holo_red_dark)
                     .into(imageView)
 
-                // ক্লিক লিসেনার
                 container.setOnClickListener {
                     Log.d(TAG, "Clicked: ${data.title}")
-                    // স্পোর্টস ডিটেইলস দেখানোর কোড
-                    openSportsDetails(data)
                 }
 
-                // ক্যাটাগরি ব্যাজ (উপরের দিকে)
+                // Category badge
                 val categoryView = container.findViewById<TextView>(R.id.sports_category) ?:
                 TextView(container.context).apply {
                     id = R.id.sports_category
@@ -155,10 +143,9 @@ class SportsFragment(private val category: String) :
                     }
                     container.addView(this)
                 }
-
                 categoryView.text = data.category
 
-                // টাইটেল (নিচের দিকে)
+                // Title
                 val titleView = container.findViewById<TextView>(R.id.sports_title) ?:
                 TextView(container.context).apply {
                     id = R.id.sports_title
@@ -174,10 +161,9 @@ class SportsFragment(private val category: String) :
                     }
                     container.addView(this)
                 }
-
                 titleView.text = data.title
 
-                // ম্যাচ তথ্য (টাইটেলের নিচে)
+                // Match info
                 val matchInfoView = container.findViewById<TextView>(R.id.sports_match_info) ?:
                 TextView(container.context).apply {
                     id = R.id.sports_match_info
@@ -193,10 +179,9 @@ class SportsFragment(private val category: String) :
                     }
                     container.addView(this)
                 }
-
                 matchInfoView.text = data.matchInfo
 
-                // Live ব্যাজ (যদি লাইভ হয়)
+                // Live badge
                 if (data.matchInfo.contains("Live", ignoreCase = true)) {
                     val liveBadge = container.findViewById<TextView>(R.id.sports_live) ?:
                     TextView(container.context).apply {
@@ -223,19 +208,8 @@ class SportsFragment(private val category: String) :
                 Log.e(TAG, "Error binding data: ${e.message}")
             }
         }
-
-        private fun openSportsDetails(sportsItem: SportsItem) {
-            // স্পোর্টস ডিটেইলস দেখানোর জন্য ইচ্ছেমতো কোড
-            // যেমন: ডিটেইলস ফ্র্যাগমেন্ট খোলা বা ওয়েবভিউ দেখানো
-            Log.d(TAG, "Opening details for: ${sportsItem.title}")
-
-            // উদাহরণ: ওয়েবভিউতে গুগল সার্চ খোলা
-            // val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=${sportsItem.title}"))
-            // startActivity(intent)
-        }
     }
 
-    // স্পোর্টস আইটেমের জন্য ডেটা ক্লাস
     data class SportsItem(
         val title: String,
         val description: String,

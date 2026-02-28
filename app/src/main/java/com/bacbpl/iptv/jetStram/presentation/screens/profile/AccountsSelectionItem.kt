@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package  com.bacbpl.iptv.jetStram.presentation.screens.profile
+package com.bacbpl.iptv.jetStram.presentation.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
@@ -32,10 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.surfaceColorAtElevation
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -61,22 +66,45 @@ fun AccountsSelectionItem(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Bottom
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = accountsSectionData.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontSize = 15.sp
+                // Icon and Title Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Icon
+                    accountsSectionData.icon?.let { icon ->
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = accountsSectionData.title,
+                            tint = Color(0xFFE50914),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } ?: Spacer(modifier = Modifier.size(24.dp))
+
+                    // Title
+                    Text(
+                        text = accountsSectionData.title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontSize = 15.sp
+                        ),
+                        modifier = Modifier.weight(1f)
                     )
-                )
-                Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                }
+
+                // Value (if exists)
                 accountsSectionData.value?.let { nnValue ->
                     Text(
                         text = nnValue,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Normal
                         ),
-                        modifier = Modifier.alpha(0.75f)
+                        modifier = Modifier
+                            .alpha(0.75f)
+                            .padding(top = 8.dp),
+                        maxLines = 2
                     )
                 }
             }

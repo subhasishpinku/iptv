@@ -15,26 +15,30 @@ import com.bacbpl.iptv.jetStram.presentation.App
 import com.bacbpl.iptv.jetStram.presentation.theme.JetStreamTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
-class JetStreamActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-        super.onCreate(savedInstanceState)
+    @AndroidEntryPoint
+// In JetStreamActivity.kt
+    class JetStreamActivity : ComponentActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            installSplashScreen()
+            super.onCreate(savedInstanceState)
 
-        setContent {
-            JetStreamTheme {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)
-                ) {
-                    CompositionLocalProvider(
-                        LocalContentColor provides MaterialTheme.colorScheme.onSurface
+            val navigateToProfile = intent.getBooleanExtra("navigate_to_profile", false)
+
+            setContent {
+                JetStreamTheme {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)
                     ) {
-                        App(
-                            onBackPressed = onBackPressedDispatcher::onBackPressed,
-                        )
+                        CompositionLocalProvider(
+                            LocalContentColor provides MaterialTheme.colorScheme.onSurface
+                        ) {
+                            App(
+                                onBackPressed = onBackPressedDispatcher::onBackPressed,
+                                navigateToProfile = navigateToProfile
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}

@@ -3,43 +3,52 @@ package com.bacbpl.iptv.jetfit.ui.fragments
 import android.animation.Animator
 import android.content.Context
 import android.content.Intent
-import androidx.fragment.app.Fragment
-import android.os.Bundle
-import android.view.ViewGroup
-import android.view.LayoutInflater
-import android.view.View
-import android.media.MediaPlayer
-import android.net.Uri
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.webkit.WebSettings
-import android.webkit.WebChromeClient
-import android.webkit.JavascriptInterface
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
+import androidx.fragment.app.Fragment
 import com.bacbpl.iptv.R
 import com.bacbpl.iptv.jetfit.ui.activities.DetailsActivity
 import com.bacbpl.iptv.jetfit.utils.UtilsText
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
-class DetailsVideoFragment: Fragment() {
-    private lateinit var videoView: VideoView
+class DetailsVideoFragment : Fragment() {
+
+    private lateinit var playerView: StyledPlayerView
+    private var exoPlayer: ExoPlayer? = null
+
+    private lateinit var youTubePlayerView: YouTubePlayerView
+    private var youTubePlayer: YouTubePlayer? = null
+
     private lateinit var iconView: ImageView
     private lateinit var textView: TextView
     private lateinit var curtimeView: TextView
     private lateinit var durationView: TextView
     private lateinit var seekContainerView: View
     private lateinit var seekBar: SeekBar
-    private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
-    private var curtime = 0
-    private var mp: MediaPlayer? = null
-    private val handler = Handler()
+
+    private var curtime = 0L
+    private val handler = Handler(Looper.getMainLooper())
     private var currentYoutubeLink: String? = null
     private var isYouTubeMode = false
+    private var isPlayerPrepared = false
 
     private val runnableIcon = Runnable {
         iconView.animate()
@@ -64,10 +73,18 @@ class DetailsVideoFragment: Fragment() {
 
     private val onEverySecond = object : Runnable {
         override fun run() {
-            if (!isYouTubeMode && ::videoView.isInitialized) {
+            if (!isYouTubeMode && exoPlayer != null && isPlayerPrepared) {
                 try {
-                    seekBar.progress = videoView.currentPosition
-                    curtimeView.text = UtilsText().msToStringTime(videoView.currentPosition)
+                    val position = exoPlayer?.currentPosition ?: 0
+                    val duration = exoPlayer?.duration ?: 0
+
+                    if (duration > 0) {
+                        seekBar.max = duration.toInt()
+                        seekBar.progress = position.toInt()
+                        curtimeView.text = UtilsText().msToStringTime(position.toInt())
+                        durationView.text = UtilsText().msToStringTime(duration.toInt())
+                    }
+
                     checkMute()
                     if (isPlaying()) {
                         seekBar.postDelayed(this, 1000)
@@ -92,10 +109,7 @@ class DetailsVideoFragment: Fragment() {
     }
 
     fun newInstance(): DetailsVideoFragment {
-        val fragment = DetailsVideoFragment()
-        val args = Bundle()
-        fragment.arguments = args
-        return fragment
+        return DetailsVideoFragment()
     }
 
     override fun onCreateView(
@@ -106,195 +120,145 @@ class DetailsVideoFragment: Fragment() {
         val view = inflater.inflate(R.layout.detail_video_fragment, container, false)
 
         // Initialize views
-        videoView = view.findViewById(R.id.video_view)
+        playerView = view.findViewById(R.id.player_view1)
+        youTubePlayerView = view.findViewById(R.id.youtube_player_view1)
         iconView = view.findViewById(R.id.video_action_icon)
         textView = view.findViewById(R.id.video_action_text)
         durationView = view.findViewById(R.id.video_duration)
         curtimeView = view.findViewById(R.id.video_curtime)
         seekContainerView = view.findViewById(R.id.video_seek_container)
         seekBar = view.findViewById(R.id.video_seekbar)
-        webView = view.findViewById(R.id.youtube_webview)
         progressBar = view.findViewById(R.id.progress_bar)
 
         // Set initial values
         curtimeView.text = "00:00"
         durationView.text = "00:00"
         seekContainerView.alpha = 0f
-        webView.visibility = View.GONE
         progressBar.visibility = View.GONE
-        webView.clearCache(true)
-        webView.clearHistory()
-        // Setup WebView for YouTube
-        setupWebView()
 
-        // Setup VideoView listeners
-        setupVideoViewListeners()
+        // Hide players initially
+        youTubePlayerView.visibility = View.GONE
+        playerView.visibility = View.GONE
+
+        // Setup YouTube Player
+        setupYouTubePlayer()
+
+        // Setup Video Player
+        setupExoPlayer()
 
         return view
     }
 
-    private fun setupWebView() {
+    private fun setupYouTubePlayer() {
         try {
-            val webSettings = webView.settings
-            webSettings.javaScriptEnabled = true
-            webSettings.loadWithOverviewMode = true
-            webSettings.useWideViewPort = true
-            webSettings.domStorageEnabled = true
-            webSettings.cacheMode = WebSettings.LOAD_DEFAULT
-            webSettings.mediaPlaybackRequiresUserGesture = false
-            webSettings.allowContentAccess = true
-            webSettings.allowFileAccess = true
-            webSettings.allowUniversalAccessFromFileURLs = true
-            webSettings.allowFileAccessFromFileURLs = true
-            webSettings.javaScriptCanOpenWindowsAutomatically = true
-            webSettings.setSupportMultipleWindows(true)
-            webSettings.loadWithOverviewMode = true
-            webSettings.useWideViewPort = true
-            webSettings.builtInZoomControls = true
-            webSettings.displayZoomControls = false
-            webSettings.setSupportZoom(true)
+            lifecycle.addObserver(youTubePlayerView)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            }
+            youTubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                override fun onReady(youTubePlayer: YouTubePlayer) {
+                    this@DetailsVideoFragment.youTubePlayer = youTubePlayer
+                    progressBar.visibility = View.GONE
+                    Log.d("YouTubePlayer", "YouTube player ready")
 
-            // WebChromeClient for better video support
-            webView.webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    if (newProgress < 100) {
-                        progressBar.visibility = View.VISIBLE
-                        progressBar.progress = newProgress
-                    } else {
-                        progressBar.visibility = View.GONE
+                    currentYoutubeLink?.let { link ->
+                        val videoId = extractYoutubeId(link)
+                        videoId?.let {
+                            youTubePlayer.loadVideo(it, 0f)
+                            isYouTubeMode = true
+                            isPlayerPrepared = true
+                        }
                     }
                 }
 
-                override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
-                    super.onShowCustomView(view, callback)
-                    // Handle fullscreen video if needed
-                }
-
-                override fun onHideCustomView() {
-                    super.onHideCustomView()
-                }
-            }
-
-            webView.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
+                override fun onError(youTubePlayer: YouTubePlayer, error: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError) {
+                    Log.e("YouTubePlayer", "Error: $error")
                     progressBar.visibility = View.GONE
-                    Log.d("WebView", "Page finished: $url")
+                    Toast.makeText(context, "YouTube error: $error", Toast.LENGTH_SHORT).show()
+                    fallbackToYouTubeApp(currentYoutubeLink)
                 }
-
-                override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
-                    super.onReceivedError(view, errorCode, description, failingUrl)
-                    Log.e("WebView", "Error: $errorCode - $description")
-                    progressBar.visibility = View.GONE
-                    Toast.makeText(context, "Error loading video: $description", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    return false
-                }
-            }
-
-            webView.addJavascriptInterface(WebAppInterface(), "Android")
-
+            })
         } catch (e: Exception) {
-            Log.e("WebView", "Error setting up WebView", e)
+            Log.e("YouTubePlayer", "Setup error", e)
         }
     }
-    // JavaScript ইন্টারফেস আপডেট করুন
-    inner class WebAppInterface {
-        @JavascriptInterface
-        fun onError(error: String) {
-            activity?.runOnUiThread {
-                Log.e("YouTube", "WebView YouTube Error: $error")
-                Toast.makeText(context, "YouTube error: $error", Toast.LENGTH_SHORT).show()
-                webView.visibility = View.GONE
-                progressBar.visibility = View.GONE
 
-                // Fallback to external player
-                currentYoutubeLink?.let {
-                    val videoId = extractYoutubeId(it)
-                    if (videoId != null) {
-                        playYoutubeExternal(videoId)
+    private fun setupExoPlayer() {
+        try {
+            exoPlayer = ExoPlayer.Builder(requireContext()).build()
+            playerView.player = exoPlayer
+            playerView.useController = true
+            playerView.setShowBuffering(StyledPlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+
+            exoPlayer?.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    when (playbackState) {
+                        Player.STATE_READY -> {
+                            progressBar.visibility = View.GONE
+                            isPlayerPrepared = true
+                            Log.d("ExoPlayer", "Player ready")
+
+                            val duration = exoPlayer?.duration ?: 0
+                            if (duration > 0) {
+                                seekBar.max = duration.toInt()
+                                durationView.text = UtilsText().msToStringTime(duration.toInt())
+                            }
+
+                            seekBar.postDelayed(onEverySecond, 1000)
+
+                            if (activity is DetailsActivity) {
+                                (activity as DetailsActivity).bgContainerView.visibility = View.GONE
+                                (activity as DetailsActivity).progressMain.visibility = View.GONE
+                            }
+                        }
+                        Player.STATE_BUFFERING -> {
+                            progressBar.visibility = View.VISIBLE
+                            Log.d("ExoPlayer", "Buffering")
+                        }
+                        Player.STATE_ENDED -> {
+                            Log.d("ExoPlayer", "Playback ended")
+                        }
+                        Player.STATE_IDLE -> {
+                            Log.d("ExoPlayer", "Player idle")
+                        }
                     }
                 }
-            }
-        }
 
-        @JavascriptInterface
-        fun onReady() {
-            activity?.runOnUiThread {
-                Log.d("YouTube", "WebView YouTube Ready")
-                progressBar.visibility = View.GONE
-            }
-        }
-    }
+                override fun onPlayerError(error: PlaybackException) {
+                    Log.e("ExoPlayer", "Error: ${error.message}")
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(context, "Video error: ${error.message}", Toast.LENGTH_LONG).show()
+                }
 
-    private fun setupVideoViewListeners() {
-        videoView.setOnPreparedListener { mPlayer ->
-            mp = mPlayer
-            mute()
-
-            seekBar.max = videoView.duration
-            seekBar.postDelayed(onEverySecond, 1000)
-            durationView.text = UtilsText().msToStringTime(videoView.duration)
-
-            mp?.setOnBufferingUpdateListener { mp, percent ->
-                val p = percent * seekBar.max / 100
-                if (p < seekBar.max) {
-                    seekBar.secondaryProgress = p
-                } else
-                    seekBar.secondaryProgress = seekBar.max
-            }
-        }
-
-        videoView.setOnErrorListener { mp, what, extra ->
-            Log.e("VideoView", "Error: what=$what, extra=$extra")
-            if (activity is DetailsActivity) {
-                (activity as DetailsActivity).progressMain.visibility = View.GONE
-                (activity as DetailsActivity).bgContainerView.animate()
-                    .alpha(1f)
-                    .setDuration(200)
-                    .start()
-            }
-            true
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    Log.d("ExoPlayer", "Is playing: $isPlaying")
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("ExoPlayer", "Setup error", e)
         }
     }
 
     fun setVideo(url: String) {
         try {
+            Log.d("VideoPlayer", "Setting video URL: $url")
+            hideYouTubePlayer()
+
             isYouTubeMode = false
-            videoView.visibility = View.VISIBLE
-            webView.visibility = View.GONE
+            playerView.visibility = View.VISIBLE
+            youTubePlayerView.visibility = View.GONE
             seekContainerView.visibility = View.VISIBLE
-            progressBar.visibility = View.GONE
+            progressBar.visibility = View.VISIBLE
 
-            videoView.setVideoPath(url)
+            val mediaItem = MediaItem.fromUri(Uri.parse(url))
+            exoPlayer?.setMediaItem(mediaItem)
+            exoPlayer?.prepare()
+            exoPlayer?.play()
 
-            videoView.setOnPreparedListener { mediaPlayer ->
-                mp = mediaPlayer
-                mediaPlayer.start()
-                mute()
+            mute()
 
-                seekBar.max = mediaPlayer.duration
-                durationView.text = UtilsText().msToStringTime(mediaPlayer.duration)
-                seekBar.postDelayed(onEverySecond, 1000)
-
-                if (activity is DetailsActivity) {
-                    (activity as DetailsActivity).bgContainerView.visibility = View.GONE
-                    (activity as DetailsActivity).progressMain.visibility = View.GONE
-                }
-            }
-
-            videoView.setOnErrorListener { _, _, _ ->
-                Toast.makeText(context, "Video cannot be played", Toast.LENGTH_SHORT).show()
-                true
-            }
         } catch (e: Exception) {
             Log.e("VideoPlayer", "Error in setVideo", e)
+            progressBar.visibility = View.GONE
+            Toast.makeText(context, "Cannot play video: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -315,26 +279,27 @@ class DetailsVideoFragment: Fragment() {
         }
         return null
     }
+
     fun playYoutube(youtubeLink: String) {
         currentYoutubeLink = youtubeLink
         val videoId = extractYoutubeId(youtubeLink)
+        Toast.makeText(context, videoId, Toast.LENGTH_SHORT).show()
 
         if (videoId.isNullOrEmpty()) {
             Toast.makeText(context, "Invalid YouTube link", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // নেটওয়ার্ক চেক করুন
         if (!isNetworkAvailable()) {
-            Toast.makeText(context, "No internet connection. Please check your network.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "No internet connection", Toast.LENGTH_LONG).show()
             return
         }
 
         try {
             isYouTubeMode = true
-            videoView.visibility = View.GONE
+            playerView.visibility = View.GONE
             seekContainerView.visibility = View.GONE
-            webView.visibility = View.VISIBLE
+            youTubePlayerView.visibility = View.VISIBLE
             progressBar.visibility = View.VISIBLE
 
             if (activity is DetailsActivity) {
@@ -342,86 +307,63 @@ class DetailsVideoFragment: Fragment() {
                 (activity as DetailsActivity).progressMain.visibility = View.GONE
             }
 
-            // সরাসরি iframe ব্যবহার করে সহজ HTML
-            val html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        background-color: black;
-                        overflow: hidden;
-                    }
-                    #player-container {
-                        position: relative;
-                        width: 100%;
-                        height: 100vh;
-                    }
-                    iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        border: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <div id="player-container">
-                    <iframe 
-                        src="https://www.youtube.com/embed/$videoId?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&iv_load_policy=3&playsinline=1"
-                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                
-                <script>
-                    window.onload = function() {
-                        Android.onReady();
-                    };
-                    
-                    window.onerror = function(message, source, lineno, colno, error) {
-                        Android.onError(message);
-                        return true;
-                    };
-                </script>
-            </body>
-            </html>
-        """.trimIndent()
-
-            webView.loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "UTF-8", null)
+            // If YouTube player is ready, load video directly
+            if (youTubePlayer != null) {
+                youTubePlayer?.loadVideo(videoId, 0f)
+                isPlayerPrepared = true
+                progressBar.visibility = View.GONE
+            } else {
+                // Otherwise, it will load when ready
+                currentYoutubeLink = youtubeLink
+                // Force YouTube player to initialize
+                youTubePlayerView.visibility = View.VISIBLE
+            }
 
         } catch (e: Exception) {
             Log.e("YouTubePlayer", "Error playing YouTube video", e)
             progressBar.visibility = View.GONE
-            Toast.makeText(context, "Error playing video: ${e.message}", Toast.LENGTH_SHORT).show()
-            playYoutubeExternal(videoId) // Fallback to external player
+            openInBrowser(videoId)
         }
     }
 
-    private fun playYoutubeExternal(videoId: String) {
-        try {
-            progressBar.visibility = View.GONE
+    private fun hideYouTubePlayer() {
+        youTubePlayer?.pause()
+        youTubePlayerView.visibility = View.GONE
+    }
 
-            // Try to open in YouTube app
+    private fun fallbackToYouTubeApp(youtubeLink: String?) {
+        activity?.runOnUiThread {
+            progressBar.visibility = View.GONE
+            youTubePlayerView.visibility = View.GONE
+
+            youtubeLink?.let {
+                val videoId = extractYoutubeId(it)
+                if (videoId != null) {
+                    openInYouTubeApp(videoId)
+                }
+            }
+        }
+    }
+
+    private fun openInYouTubeApp(videoId: String) {
+        try {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:$videoId"))
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
         } catch (e: Exception) {
-            try {
-                // Fallback to browser
-                val webIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://m.youtube.com/watch?v=$videoId")
-                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(webIntent)
-            } catch (e2: Exception) {
-                Toast.makeText(context, "Cannot play YouTube video", Toast.LENGTH_SHORT).show()
-            }
+            openInBrowser(videoId)
+        }
+    }
+
+    private fun openInBrowser(videoId: String) {
+        try {
+            val webIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://m.youtube.com/watch?v=$videoId")
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(webIntent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Cannot play YouTube video", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -528,7 +470,12 @@ class DetailsVideoFragment: Fragment() {
 
     fun isPlaying(): Boolean {
         return try {
-            !isYouTubeMode && videoView.isPlaying
+            if (isYouTubeMode) {
+                // YouTube player play state check is complex, assume true if player exists
+                youTubePlayer != null
+            } else {
+                exoPlayer?.isPlaying ?: false
+            }
         } catch (e: Exception) {
             false
         }
@@ -540,10 +487,12 @@ class DetailsVideoFragment: Fragment() {
 
     fun pause(b: Boolean) {
         try {
-            if (!isYouTubeMode && isPlaying()) {
+            if (isYouTubeMode) {
+                youTubePlayer?.pause()
+            } else if (exoPlayer?.isPlaying == true) {
                 showSeekContainer()
-                mp?.pause()
-                curtime = mp?.currentPosition ?: 0
+                exoPlayer?.pause()
+                curtime = exoPlayer?.currentPosition ?: 0
                 checkMute()
                 if (b) showCenterIcon(R.drawable.ic_player_action_pause)
             }
@@ -558,8 +507,10 @@ class DetailsVideoFragment: Fragment() {
 
     fun play(b: Boolean) {
         try {
-            if (!isYouTubeMode) {
-                mp?.start()
+            if (isYouTubeMode) {
+                youTubePlayer?.play()
+            } else if (exoPlayer != null) {
+                exoPlayer?.play()
                 checkMute()
                 if (b) showCenterIcon(R.drawable.ic_player_action_play)
                 seekBar.postDelayed(onEverySecond, 1000)
@@ -571,8 +522,8 @@ class DetailsVideoFragment: Fragment() {
 
     fun mute() {
         try {
-            if (!isYouTubeMode && isPlaying()) {
-                mp?.setVolume(0f, 0f)
+            if (!isYouTubeMode) {
+                exoPlayer?.volume = 0f
             }
         } catch (e: Exception) {
             Log.e("VideoPlayer", "Error in mute", e)
@@ -581,8 +532,8 @@ class DetailsVideoFragment: Fragment() {
 
     fun unmute() {
         try {
-            if (!isYouTubeMode && isPlaying()) {
-                mp?.setVolume(1f, 1f)
+            if (!isYouTubeMode) {
+                exoPlayer?.volume = 1f
             }
         } catch (e: Exception) {
             Log.e("VideoPlayer", "Error in unmute", e)
@@ -592,11 +543,9 @@ class DetailsVideoFragment: Fragment() {
     fun seek() {
         if (!isYouTubeMode) {
             try {
-                seekBar.progress = curtime
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mp?.seekTo(curtime.toLong(), MediaPlayer.SEEK_CLOSEST)
-                } else mp?.seekTo(curtime)
-                curtimeView.text = UtilsText().msToStringTime(curtime)
+                seekBar.progress = curtime.toInt()
+                exoPlayer?.seekTo(curtime)
+                curtimeView.text = UtilsText().msToStringTime(curtime.toInt())
             } catch (e: Exception) {
                 Log.e("VideoPlayer", "Error in seek", e)
             }
@@ -604,11 +553,14 @@ class DetailsVideoFragment: Fragment() {
     }
 
     fun seekPlus(ms: Int) {
-        if (!isYouTubeMode && mp != null) {
+        if (!isYouTubeMode && exoPlayer != null) {
             try {
-                if (mp!!.duration > mp!!.currentPosition + ms) {
+                val duration = exoPlayer?.duration ?: 0
+                val position = exoPlayer?.currentPosition ?: 0
+
+                if (duration > position + ms) {
                     showSeekContainer()
-                    curtime = mp!!.currentPosition + ms
+                    curtime = position + ms
                     showCenterText("+${ms/1000}s")
                     seek()
                 }
@@ -619,15 +571,17 @@ class DetailsVideoFragment: Fragment() {
     }
 
     fun seekMinus(ms: Int) {
-        if (!isYouTubeMode && mp != null) {
+        if (!isYouTubeMode && exoPlayer != null) {
             try {
+                val position = exoPlayer?.currentPosition ?: 0
+
                 showSeekContainer()
-                if (mp!!.currentPosition > ms) {
-                    curtime = mp!!.currentPosition - ms
+                if (position > ms) {
+                    curtime = position - ms
                     showCenterText("-${ms/1000}s")
                 } else {
                     curtime = 0
-                    showCenterText("-${(ms-mp!!.currentPosition)/1000}s")
+                    showCenterText("-${(ms-position)/1000}s")
                 }
                 seek()
             } catch (e: Exception) {
@@ -638,31 +592,22 @@ class DetailsVideoFragment: Fragment() {
 
     override fun onPause() {
         super.onPause()
-        try {
-            webView.onPause()
-            webView.pauseTimers()
-        } catch (e: Exception) {
-            Log.e("WebView", "Error pausing WebView", e)
-        }
+        exoPlayer?.pause()
+        youTubePlayer?.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        try {
-            webView.onResume()
-            webView.resumeTimers()
-        } catch (e: Exception) {
-            Log.e("WebView", "Error resuming WebView", e)
+        if (!isYouTubeMode && exoPlayer != null && isPlayerPrepared) {
+            exoPlayer?.play()
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        try {
-            webView.stopLoading()
-            webView.destroy()
-        } catch (e: Exception) {
-            Log.e("WebView", "Error destroying WebView", e)
-        }
+        exoPlayer?.release()
+        exoPlayer = null
+        youTubePlayer = null
+        handler.removeCallbacksAndMessages(null)
     }
 }

@@ -22,10 +22,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
-class KidsFragment(private val category: String) :
-    VerticalGridSupportFragment(),
-    BrowseSupportFragment.MainFragmentAdapterProvider {
-
+class KidsFragment(private val category: String) : BaseVerticalGridFragment(category) {
     private val mainFragmentAdapter = BrowseSupportFragment.MainFragmentAdapter(this)
     private lateinit var mAdapter: ArrayObjectAdapter
 
@@ -59,20 +56,31 @@ class KidsFragment(private val category: String) :
     }
 
     override fun onStart() {
-        super.onStart()
+        try {
+            super.onStart()
 
-        // Colorful gradient background
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(
-                Color.parseColor("#667eea"),
-                Color.parseColor("#764ba2"),
-                Color.parseColor("#f093fb"),
-                Color.parseColor("#f5576c")
+            // Colorful gradient background
+            val gradientDrawable = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    Color.parseColor("#667eea"),
+                    Color.parseColor("#764ba2"),
+                    Color.parseColor("#f093fb"),
+                    Color.parseColor("#f5576c")
+                )
             )
-        )
-        view?.background = gradientDrawable
+            view?.background = gradientDrawable
+
+            Log.d(TAG, "Gradient background applied successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onStart: ${e.message}")
+            // Fallback to default color if gradient fails
+            view?.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.default_background)
+            )
+        }
     }
+
 
     private fun loadKidsChannels() {
         val channels = listOf(

@@ -17,6 +17,7 @@
 package com.bacbpl.iptv.jetStram.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,20 +31,36 @@ import com.bacbpl.iptv.jetStram.presentation.screens.Screens
 import com.bacbpl.iptv.jetStram.presentation.screens.categories.CategoryMovieListScreen
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.DashboardScreen
 import com.bacbpl.iptv.jetStram.presentation.screens.movies.MovieDetailsScreen
+import com.bacbpl.iptv.jetStram.presentation.screens.profile.ProfileScreen  // Add this import
 import com.bacbpl.iptv.jetStram.presentation.screens.videoPlayer.VideoPlayerScreen
+import kotlinx.coroutines.delay
 
 @Composable
 fun App(
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    navigateToProfile: Boolean = false
 ) {
 
     val navController = rememberNavController()
     var isComingBackFromDifferentScreen by remember { mutableStateOf(false) }
 
+    LaunchedEffect(navigateToProfile) {
+        if (navigateToProfile) {
+            // Small delay to ensure the graph is ready
+            delay(100)
+            navController.navigate(Screens.Profile())
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screens.Dashboard(),
         builder = {
+            // Add Profile screen first
+            composable(route = Screens.Profile()) {
+                ProfileScreen()
+            }
+
             composable(
                 route = Screens.CategoryMovieList(),
                 arguments = listOf(
@@ -76,7 +93,6 @@ fun App(
             ) {
                 MovieDetailsScreen(
                     goToMoviePlayer = { movie ->
-                        // Pass the movie ID when navigating to video player
                         navController.navigate(
                             Screens.VideoPlayer.withArgs(movie.id)
                         )
@@ -111,7 +127,6 @@ fun App(
                         )
                     },
                     openVideoPlayer = { movie ->
-                        // Pass the movie ID when navigating to video player
                         navController.navigate(
                             Screens.VideoPlayer.withArgs(movie.id)
                         )
@@ -124,7 +139,7 @@ fun App(
                 )
             }
 
-            // Single VideoPlayer route with argument
+            // VideoPlayer screen
             composable(
                 route = Screens.VideoPlayer.withArgs("{${VideoPlayerScreen.MovieIdBundleKey}}"),
                 arguments = listOf(
@@ -133,7 +148,6 @@ fun App(
                     }
                 )
             ) { backStackEntry ->
-                val movieId = backStackEntry.arguments?.getString(VideoPlayerScreen.MovieIdBundleKey)
                 VideoPlayerScreen(
                     onBackPressed = {
                         if (navController.navigateUp()) {

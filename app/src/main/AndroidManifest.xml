@@ -29,6 +29,9 @@
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <!--  REQUIRED FOR ANDROID 11+ PACKAGE VISIBILITY -->
     <queries>
         <package android:name="com.jio.hotstar.tv"/>
@@ -102,9 +105,16 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:focusable="true"
             android:focusableInTouchMode="true" />
-
         <activity
-            android:name=".jetfit.ui.activities.OTTplayDeepLinkActivity"
+            android:name=".ui.activities.HomeScreen"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.Leanback.NoActionBar"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <activity
+            android:name=".ui.activities.OTTplayDeepLinkActivity"
             android:exported="true"
             android:theme="@style/Theme.Leanback.NoActionBar"
             android:launchMode="singleTask"

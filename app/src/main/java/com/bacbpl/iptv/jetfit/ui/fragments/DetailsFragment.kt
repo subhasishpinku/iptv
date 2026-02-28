@@ -1370,15 +1370,20 @@ class DetailsFragment : DetailsSupportFragment() {
     }
 
     private fun playTrailer(trailer: String) {
-        Log.e("Trailer", trailer)
+        Log.d("DetailsFragment", "Attempting to play trailer: $trailer")
 
         try {
             if (activity is DetailsActivity) {
+                // Make sure the video fragment is visible and playing
                 (activity as DetailsActivity).videoFragment.pause(true)
                 (activity as DetailsActivity).videoFragment.playYoutube(trailer)
+            } else {
+                // If not in DetailsActivity, try to open externally
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailer))
+                startActivity(intent)
             }
         } catch (e: Exception) {
-            Log.e("Trailer", "Failed to play trailer", e)
+            Log.e("DetailsFragment", "Failed to play trailer", e)
             Toast.makeText(context, "Cannot play trailer", Toast.LENGTH_SHORT).show()
         }
     }

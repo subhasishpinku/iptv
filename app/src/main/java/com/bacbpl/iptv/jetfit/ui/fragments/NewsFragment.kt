@@ -2,6 +2,7 @@ package com.bacbpl.iptv.jetfit.ui.fragments
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -34,7 +35,7 @@ class NewsFragment(private val category: String) :
 
         // গ্রিড প্রেজেন্টার সেটআপ
         gridPresenter = VerticalGridPresenter(FocusHighlight.ZOOM_FACTOR_MEDIUM).apply {
-            numberOfColumns = 6// নিউজের জন্য ২ কলাম
+            numberOfColumns = 6
         }
 
         mAdapter = ArrayObjectAdapter(NewsItemPresenter())
@@ -43,15 +44,35 @@ class NewsFragment(private val category: String) :
         loadNewsData()
     }
 
+    // onStart() এ শুধু ব্যাকগ্রাউন্ড সেট করুন, super.onStart() কল রাখুন
     override fun onStart() {
-        super.onStart()
-        view?.setBackgroundColor(
-            ContextCompat.getColor(requireContext(), R.color.default_background)
-        )
+        try {
+            super.onStart()
+            // শুধু ব্যাকগ্রাউন্ড সেট করুন
+            view?.let {
+                it.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.default_background)
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onStart: ${e.message}")
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        try {
+            super.onViewCreated(view, savedInstanceState)
+            // ব্যাকগ্রাউন্ড সেট করুন
+            view.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.default_background)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onViewCreated: ${e.message}")
+        }
     }
 
     private fun loadNewsData() {
-        // ডেমো নিউজ ডাটা - আপনার API কল এখানে যোগ করুন
+        // ডেমো নিউজ ডাটা
         val newsList = listOf(
             NewsItem(
                 title = "New Movies Released This Week",
@@ -111,10 +132,9 @@ class NewsFragment(private val category: String) :
                 // ক্লিক লিসেনার
                 container.setOnClickListener {
                     Log.d(TAG, "Clicked: ${data.title}")
-                    // এখানে নিউজ ডিটেইলস দেখানোর কোড যোগ করুন
                 }
 
-                // টাইটেল এবং বিবরণ দেখানোর জন্য TextView
+                // টাইটেল দেখানোর জন্য TextView
                 val titleView = container.findViewById<TextView>(R.id.news_title) ?:
                 TextView(container.context).apply {
                     id = R.id.news_title
@@ -133,7 +153,7 @@ class NewsFragment(private val category: String) :
 
                 titleView.text = data.title
 
-                // সোর্স দেখানোর জন্য ছোট TextView
+                // সোর্স দেখানোর জন্য TextView
                 val sourceView = container.findViewById<TextView>(R.id.news_source) ?:
                 TextView(container.context).apply {
                     id = R.id.news_source

@@ -35,6 +35,7 @@
     <!-- App Theme -->
     <style name="AppTheme" parent="Theme.Leanback">
         <item name="android:windowContentTransitions">true</item>
+        <item name="browseTitleViewLayout">@layout/title_main</item>
     </style>
 
     <!-- TV Player Theme -->
