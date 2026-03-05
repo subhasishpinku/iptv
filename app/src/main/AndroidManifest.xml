@@ -114,6 +114,14 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
         <activity
+            android:name=".ui.activities.SubscribeScreen"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.Leanback.NoActionBar"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <activity
             android:name=".ui.activities.OTTplayDeepLinkActivity"
             android:exported="true"
             android:theme="@style/Theme.Leanback.NoActionBar"

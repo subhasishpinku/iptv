@@ -16,7 +16,7 @@ fun JetStreamActivityLauncher() {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        val intent = Intent(context, HomeScreen()::class.java)
+        val intent = Intent(context, SubscribeScreen()::class.java)
         context.startActivity(intent)
     }
 
