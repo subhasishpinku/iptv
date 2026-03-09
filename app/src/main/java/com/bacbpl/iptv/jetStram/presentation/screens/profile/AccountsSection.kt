@@ -255,7 +255,7 @@ fun AccountsSection() {
                     .weight(1f)
                     .fillMaxWidth()
                     .padding(horizontal = childPadding.start),
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(3),
                 content = {
                     items(accountsSectionListItems.size) { index ->
                         AccountsSelectionItem(
@@ -532,7 +532,8 @@ fun SubscriberInfoField(
                 )
                 .onFocusChanged { isFocused = it.isFocused }
                 .focusable()
-        ) {
+        )
+        {
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,

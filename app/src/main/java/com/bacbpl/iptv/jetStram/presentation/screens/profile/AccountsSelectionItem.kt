@@ -41,7 +41,6 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import androidx.tv.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
-
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun AccountsSelectionItem(
@@ -53,9 +52,9 @@ fun AccountsSelectionItem(
         Surface(
             onClick = accountsSectionData.onClick,
             modifier = modifier
-                .padding(8.dp)
+                .padding(4.dp)
                 .fillMaxWidth()
-                .aspectRatio(2f),
+                .aspectRatio(2.5f),   // smaller box
             colors = ClickableSurfaceDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
             ),
@@ -65,46 +64,42 @@ fun AccountsSelectionItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(8.dp),   // smaller padding
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Icon and Title Row
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Icon
+
                     accountsSectionData.icon?.let { icon ->
                         Icon(
                             imageVector = icon,
                             contentDescription = accountsSectionData.title,
                             tint = Color(0xFFE50914),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(18.dp)   // smaller icon
                         )
-                    } ?: Spacer(modifier = Modifier.size(24.dp))
+                    } ?: Spacer(modifier = Modifier.size(18.dp))
 
-                    // Title
                     Text(
                         text = accountsSectionData.title,
                         style = MaterialTheme.typography.titleSmall.copy(
-                            fontSize = 15.sp
+                            fontSize = 12.sp
                         ),
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                // Value (if exists)
                 accountsSectionData.value?.let { nnValue ->
                     Text(
                         text = nnValue,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Normal
-                        ),
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
                             .alpha(0.75f)
-                            .padding(top = 8.dp),
-                        maxLines = 2
+                            .padding(top = 4.dp),
+                        maxLines = 1
                     )
                 }
             }

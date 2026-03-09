@@ -16,6 +16,7 @@
 
 package com.bacbpl.iptv.jetStram.presentation.screens.dashboard
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -176,6 +178,7 @@ private fun JetStreamLogo(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // First icon
         Icon(
             Icons.Default.PlayCircle,
             contentDescription = StringConstants.Composable
@@ -184,11 +187,23 @@ private fun JetStreamLogo(
                 .padding(end = 4.dp)
                 .size(IconSize)
         )
+
+        // Text in the middle
         Text(
             text = stringResource(R.string.brand_logo_text),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             fontFamily = LexendExa
         )
+
+        // Image at the end
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "JetStream Logo Image",
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .size(IconSize)
+        )
     }
+
 }

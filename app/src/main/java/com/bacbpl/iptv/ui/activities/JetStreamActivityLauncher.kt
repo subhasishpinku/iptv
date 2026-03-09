@@ -8,8 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.bacbpl.iptv.JetStreamActivity
-import com.bacbpl.iptv.jetStram.presentation.screens.home.HomeScreen
+import com.bacbpl.iptv.ui.activities.subscribescreen.SubscribeScreen
 
 @Composable
 fun JetStreamActivityLauncher() {

@@ -153,7 +153,7 @@ fun SignInActivity(
                                     phoneError = "Enter valid 10-digit number"
                                 }
                                 else -> {
-                                    onNavigateToOTP("+91$phoneNumber")
+                                    onNavigateToOTP(phoneNumber)
                                 }
                             }
                         },

@@ -74,7 +74,7 @@ import com.bacbpl.iptv.jetStram.presentation.theme.JetStreamTheme
 @Composable
 fun ProfileScreen(
     @FloatRange(from = 0.0, to = 1.0)
-    sidebarWidthFraction: Float = 0.32f
+    sidebarWidthFraction: Float = 0.15f
 ) {
     val childPadding = rememberChildPadding()
     val profileNavController = rememberNavController()
@@ -183,6 +183,12 @@ fun ProfileScreen(
             builder = {
                 composable(ProfileScreens.Accounts()) {
                     AccountsSection()
+                }
+                composable(ProfileScreens.Subscribe()) {
+                    SubscribeSection(
+                        isSubtitlesChecked = isSubtitlesChecked,
+                        onSubtitleCheckChange = { isSubtitlesChecked = it }
+                    )
                 }
                 composable(ProfileScreens.About()) {
                     AboutSection()

@@ -84,14 +84,14 @@ fun DarkCardUI() {
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TvButton("Button 1")
-            TvButton("Button 2")
-            TvButton("Button 3")
-        }
+//        Row(
+//            horizontalArrangement = Arrangement.spacedBy(20.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            TvButton("Button 1")
+//            TvButton("Button 2")
+//            TvButton("Button 3")
+//        }
     }
 }
 
@@ -130,23 +130,23 @@ fun SelectableCard(
     }
 }
 
-@Composable
-fun TvButton(text: String) {
-    var focused by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .onFocusChanged { focused = it.isFocused }
-            .focusable()
-            .background(
-                color = if (focused) Color.White else Color.DarkGray,
-                shape = RoundedCornerShape(50)
-            )
-            .padding(horizontal = 30.dp, vertical = 12.dp)
-    ) {
-        Text(
-            text = text,
-            color = if (focused) Color.Black else Color.White
-        )
-    }
-}
+//@Composable
+//fun TvButton(text: String) {
+//    var focused by remember { mutableStateOf(false) }
+//
+//    Box(
+//        modifier = Modifier
+//            .onFocusChanged { focused = it.isFocused }
+//            .focusable()
+//            .background(
+//                color = if (focused) Color.White else Color.DarkGray,
+//                shape = RoundedCornerShape(50)
+//            )
+//            .padding(horizontal = 30.dp, vertical = 12.dp)
+//    ) {
+//        Text(
+//            text = text,
+//            color = if (focused) Color.Black else Color.White
+//        )
+//    }
+//}

@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.androidx.compose.runtime.livedata)
     kapt(libs.hilt.compiler)
 
     implementation(libs.glide)
@@ -153,33 +154,55 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.media3.exoplayer.hls)
 
-    implementation("com.github.holgerbrandl:themoviedbapi:1.15")
-    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
-    implementation("com.github.HaarigerHarald:android-youtubeExtractor:master-SNAPSHOT")
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
-    implementation("androidx.media3:media3-datasource-rtmp:1.4.0")  // RTMP support
+//    implementation("com.github.holgerbrandl:themoviedbapi:1.15")
+//    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+//    implementation("com.github.HaarigerHarald:android-youtubeExtractor:master-SNAPSHOT")
+//    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+//    implementation("androidx.media3:media3-datasource-rtmp:1.4.0")  // RTMP support
+
+    implementation(libs.themoviedbapi)
+    implementation(libs.exoplayer)
     implementation(libs.jackson.annotations)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.core)
     implementation(libs.exoplayer.rtmp)
     // For baseline profile generation
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
-    // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+//    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+//    // Retrofit
+//    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+//    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+//    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+//
+//    // ViewModel
+//    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+////    implementation(libs.tmdb)
+//    implementation("org.slf4j:slf4j-simple:1.7.36")
+//    implementation("com.uwetrottmann.tmdb2:tmdb-java:2.11.0")
+//
+//    // Coroutines
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+//    kapt("com.github.bumptech.glide:compiler:4.16.0")
+//    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.0")
+    implementation(libs.androidx.compose.constraintlayout)
+    implementation(libs.androidx.viewmodel.compose)
+//
+    // Retrofit & Networking
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
 
-    // ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-//    implementation(libs.tmdb)
-    implementation("org.slf4j:slf4j-simple:1.7.36")
-    implementation("com.uwetrottmann.tmdb2:tmdb-java:2.11.0")
+    // TMDB
+    implementation(libs.tmdb.java)
+    implementation(libs.slf4j.simple)
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    kapt("com.github.bumptech.glide:compiler:4.16.0")
-    implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:1.9.0")
+    implementation(libs.kotlinx.coroutines.android)
 
+    // Glide
+    kapt(libs.glide.compiler)
+
+    // Kotlin
+    implementation(libs.kotlin.parcelize.runtime)
 
     baselineProfile(project(":benchmark"))
 }
