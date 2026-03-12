@@ -1,9 +1,13 @@
 package com.bacbpl.iptv.ui.activities.subscribescreen.viewmodels
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bacbpl.iptv.JetStreamActivity
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.Plan
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.SubscribePlanResponse
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.repositories.PlanRepository
@@ -32,12 +36,15 @@ class PlanViewModel : ViewModel() {
     private val _selectedPlan = MutableLiveData<Plan?>()
     val selectedPlan: LiveData<Plan?> = _selectedPlan
 
-    // New LiveData for subscription response
     private val _subscribeResponse = MutableLiveData<SubscribePlanResponse?>()
     val subscribeResponse: LiveData<SubscribePlanResponse?> = _subscribeResponse
 
     private val _isSubscribing = MutableLiveData<Boolean>()
     val isSubscribing: LiveData<Boolean> = _isSubscribing
+
+    // Events for UI
+    private val _navigateToProfile = MutableLiveData<Boolean>()
+    val navigateToProfile: LiveData<Boolean> = _navigateToProfile
 
     init {
         loadAllPlans()
@@ -105,10 +112,6 @@ class PlanViewModel : ViewModel() {
         _selectedPlan.value = plan
     }
 
-    fun clearSelection() {
-        _selectedPlan.value = null
-    }
-
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
@@ -117,35 +120,51 @@ class PlanViewModel : ViewModel() {
         _subscribeResponse.value = null
     }
 
-    fun getPlansForDuration(duration: Int): LiveData<List<Plan>> {
-        return when (duration) {
-            PlanRepository.DURATION_MONTHLY -> monthlyPlans
-            PlanRepository.DURATION_QUARTERLY -> quarterlyPlans
-            PlanRepository.DURATION_HALF_YEARLY -> halfYearlyPlans
-            else -> monthlyPlans
-        }
+    fun clearNavigateToProfile() {
+        _navigateToProfile.value = false
     }
 
-    // New function to subscribe to a plan
-    fun subscribeToPlan(mobile: String, planCode: Int) {
+    fun subscribeToPlan(mobile: String, planCode: Int, context: Context) {
         viewModelScope.launch {
             _isSubscribing.value = true
             _subscribeResponse.value = null
+            _errorMessage.value = null
 
             try {
                 val response = repository.subscribePlan(mobile, planCode)
-                if (response.isSuccessful) {
-                    _subscribeResponse.value = response.body()
-                    println("Subscription : ${response.body()}");
-                } else {
-                    _errorMessage.value = "Subscription failed: ${response.code()}"
-                    println("Subscription : ${response.body()} ${response.code()}");
 
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    _subscribeResponse.value = responseBody
+                    println("Subscription Success: $responseBody")
+
+                    // Check if subscriber is registered
+                    if (responseBody?.isRegistered == true) {
+                        // Success - show toast
+                        Toast.makeText(context, "Subscription successful!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // Subscriber doesn't exist - navigate to profile
+                        _navigateToProfile.value = true
+                        _errorMessage.value = responseBody?.message ?: "Subscriber does not exist"
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    println("Subscription Failed: ${response.code()} - $errorBody")
+
+                    // Check if the error indicates subscriber doesn't exist
+                    if (errorBody?.contains("Subscriber does not exists") == true) {
+                        _navigateToProfile.value = true
+                        _errorMessage.value = "Subscriber does not exist. Please register."
+                    } else {
+                        _errorMessage.value = "Subscription failed: ${response.code()}"
+                    }
                 }
             } catch (e: IOException) {
                 _errorMessage.value = "Network error: ${e.message}"
+                println("Network Error: ${e.message}")
             } catch (e: Exception) {
                 _errorMessage.value = "Unexpected error: ${e.message}"
+                println("Unexpected Error: ${e.message}")
             } finally {
                 _isSubscribing.value = false
             }

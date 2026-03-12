@@ -114,6 +114,14 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
         <activity
+            android:name=".jetStram.presentation.screens.player.TvPlayer"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.Leanback.NoActionBar"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <activity
             android:name=".ui.activities.subscribescreen.SubscribeScreen"
             android:exported="true"
             android:screenOrientation="landscape"

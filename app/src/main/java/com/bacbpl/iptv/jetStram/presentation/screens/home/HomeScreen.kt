@@ -1,20 +1,5 @@
-/*
- * Copyright 2023 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package  com.bacbpl.iptv.jetStram.presentation.screens.home
+// Update your existing HomeScreen.kt
+package com.bacbpl.iptv.jetStram.presentation.screens.home
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,24 +23,27 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bacbpl.iptv.jetStram.data.entities.Movie
 import com.bacbpl.iptv.jetStram.data.entities.MovieList
+import com.bacbpl.iptv.jetStram.data.entities.TvChannel
 import com.bacbpl.iptv.data.util.StringConstants
 import com.bacbpl.iptv.jetStram.presentation.common.Error
 import com.bacbpl.iptv.jetStram.presentation.common.Loading
 import com.bacbpl.iptv.jetStram.presentation.common.MoviesRow
-import  com.bacbpl.iptv.jetStram.presentation.screens.dashboard.rememberChildPadding
-import com.bacbpl.iptv.jetStram.presentation.screens.home.HomeScreeViewModel
-import com.bacbpl.iptv.jetStram.presentation.screens.home.HomeScreenUiState
-import com.bacbpl.iptv.jetStram.presentation.screens.home.Top10MoviesList
+import com.bacbpl.iptv.jetStram.presentation.common.TvChannelsRow
+import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.rememberChildPadding
 
 @Composable
 fun HomeScreen(
     onMovieClick: (movie: Movie) -> Unit,
     goToVideoPlayer: (movie: Movie) -> Unit,
+    onTvChannelClick: (channel: TvChannel) -> Unit, // New parameter for TV channels
     onScroll: (isTopBarVisible: Boolean) -> Unit,
     isTopBarVisible: Boolean,
     homeScreeViewModel: HomeScreeViewModel = hiltViewModel(),
+    tvChannelViewModel: TvChannelViewModel = hiltViewModel(), // Add TV channel ViewModel
 ) {
     val uiState by homeScreeViewModel.uiState.collectAsStateWithLifecycle()
+    val tvChannels by tvChannelViewModel.channels.collectAsStateWithLifecycle()
+    val isLoadingTv by tvChannelViewModel.isLoading.collectAsStateWithLifecycle()
 
     when (val s = uiState) {
         is HomeScreenUiState.Ready -> {
@@ -63,7 +52,9 @@ fun HomeScreen(
                 trendingMovies = s.trendingMovieList,
                 top10Movies = s.top10MovieList,
                 nowPlayingMovies = s.nowPlayingMovieList,
+                tvChannels = tvChannels,
                 onMovieClick = onMovieClick,
+                onTvChannelClick = onTvChannelClick,
                 onScroll = onScroll,
                 goToVideoPlayer = goToVideoPlayer,
                 isTopBarVisible = isTopBarVisible,
@@ -82,13 +73,14 @@ private fun Catalog(
     trendingMovies: MovieList,
     top10Movies: MovieList,
     nowPlayingMovies: MovieList,
+    tvChannels: List<TvChannel>,
     onMovieClick: (movie: Movie) -> Unit,
+    onTvChannelClick: (channel: TvChannel) -> Unit,
     onScroll: (isTopBarVisible: Boolean) -> Unit,
     goToVideoPlayer: (movie: Movie) -> Unit,
     modifier: Modifier = Modifier,
     isTopBarVisible: Boolean = true,
 ) {
-
     val lazyListState = rememberLazyListState()
     val childPadding = rememberChildPadding()
     var immersiveListHasFocus by remember { mutableStateOf(false) }
@@ -103,6 +95,7 @@ private fun Catalog(
     LaunchedEffect(shouldShowTopBar) {
         onScroll(shouldShowTopBar)
     }
+
     LaunchedEffect(isTopBarVisible) {
         if (isTopBarVisible) lazyListState.animateScrollToItem(0)
     }
@@ -110,10 +103,8 @@ private fun Catalog(
     LazyColumn(
         state = lazyListState,
         contentPadding = PaddingValues(bottom = 108.dp),
-        // Setting overscan margin to bottom to ensure the last row's visibility
         modifier = modifier,
     ) {
-
         item(contentType = "FeaturedMoviesCarousel") {
             FeaturedMoviesCarousel(
                 movies = featuredMovies,
@@ -122,11 +113,20 @@ private fun Catalog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(324.dp)
-                /*
-                 Setting height for the FeaturedMovieCarousel to keep it rendered with same height,
-                 regardless of the top bar's visibility
-                 */
             )
+        }
+
+
+        // Add Live TV Channels Row here
+        if (tvChannels.isNotEmpty()) {
+            item(contentType = "TvChannelsRow") {
+                TvChannelsRow(
+                    title = "Live TV Channels",
+                    channels = tvChannels.take(10), // Show first 10 channels
+                    onChannelSelected = onTvChannelClick,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
         }
         item(contentType = "MoviesRow") {
             MoviesRow(
@@ -136,6 +136,7 @@ private fun Catalog(
                 onMovieSelected = onMovieClick
             )
         }
+
         item(contentType = "Top10MoviesList") {
             Top10MoviesList(
                 movieList = top10Movies,
@@ -145,6 +146,46 @@ private fun Catalog(
                 },
             )
         }
+
+        // Add More TV Channels by Category
+        if (tvChannels.size > 10) {
+//            item(contentType = "TvChannelsRowBangla") {
+//                val banglaChannels = tvChannels.filter { it.category == "Bangla" }
+//                if (banglaChannels.isNotEmpty()) {
+//                    TvChannelsRow(
+//                        title = "Bangla TV Channels",
+//                        channels = banglaChannels,
+//                        onChannelSelected = onTvChannelClick,
+//                        modifier = Modifier.padding(top = 16.dp)
+//                    )
+//                }
+//            }
+
+//            item(contentType = "TvChannelsRowNews") {
+//                val newsChannels = tvChannels.filter { it.category == "News" }
+//                if (newsChannels.isNotEmpty()) {
+//                    TvChannelsRow(
+//                        title = "News Channels",
+//                        channels = newsChannels,
+//                        onChannelSelected = onTvChannelClick,
+//                        modifier = Modifier.padding(top = 16.dp)
+//                    )
+//                }
+//            }
+//
+//            item(contentType = "TvChannelsRowMovies") {
+//                val movieChannels = tvChannels.filter { it.category == "Movies" }
+//                if (movieChannels.isNotEmpty()) {
+//                    TvChannelsRow(
+//                        title = "Movie Channels",
+//                        channels = movieChannels,
+//                        onChannelSelected = onTvChannelClick,
+//                        modifier = Modifier.padding(top = 16.dp)
+//                    )
+//                }
+//            }
+        }
+
         item(contentType = "MoviesRow") {
             MoviesRow(
                 modifier = Modifier.padding(top = 16.dp),

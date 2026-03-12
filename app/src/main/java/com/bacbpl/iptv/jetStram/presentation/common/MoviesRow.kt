@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -57,11 +58,18 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.bacbpl.iptv.jetStram.data.entities.Movie
 import com.bacbpl.iptv.jetStram.data.entities.MovieList
-import  com.bacbpl.iptv.jetStram.presentation.screens.dashboard.rememberChildPadding
+import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.rememberChildPadding
 
 enum class ItemDirection(val aspectRatio: Float) {
-    Vertical(10.5f / 16f),
-    Horizontal(16f / 9f);
+    Vertical(10.5f / 16f),  // Portrait style
+    Horizontal(16f / 9f);    // Landscape style
+}
+
+// Add fixed width constants for different item types
+object ItemDimensions {
+    val VerticalItemWidth = 180.dp
+    val HorizontalItemWidth = 320.dp
+    val ItemSpacing = 20.dp
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -82,6 +90,12 @@ fun MoviesRow(
     onMovieSelected: (movie: Movie) -> Unit = {}
 ) {
     val (lazyRow, firstItem) = remember { FocusRequester.createRefs() }
+
+    // Determine item width based on direction
+    val itemWidth = when (itemDirection) {
+        ItemDirection.Vertical -> ItemDimensions.VerticalItemWidth
+        ItemDirection.Horizontal -> ItemDimensions.HorizontalItemWidth
+    }
 
     Column(
         modifier = modifier.focusGroup()
@@ -104,7 +118,7 @@ fun MoviesRow(
                     start = startPadding,
                     end = endPadding,
                 ),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalArrangement = Arrangement.spacedBy(ItemDimensions.ItemSpacing),
                 modifier = Modifier
                     .focusRequester(lazyRow)
                     .focusRestorer {
@@ -118,7 +132,8 @@ fun MoviesRow(
                         Modifier
                     }
                     MoviesRowItem(
-                        modifier = itemModifier.weight(1f),
+                        modifier = itemModifier
+                            .width(itemWidth),  // Fixed width instead of weight
                         index = index,
                         itemDirection = itemDirection,
                         onMovieSelected = {
@@ -155,6 +170,12 @@ fun ImmersiveListMoviesRow(
 ) {
     val (lazyRow, firstItem) = remember { FocusRequester.createRefs() }
 
+    // Determine item width based on direction
+    val itemWidth = when (itemDirection) {
+        ItemDirection.Vertical -> ItemDimensions.VerticalItemWidth
+        ItemDirection.Horizontal -> ItemDimensions.HorizontalItemWidth
+    }
+
     Column(
         modifier = modifier.focusGroup()
     ) {
@@ -174,7 +195,7 @@ fun ImmersiveListMoviesRow(
         ) { movieState ->
             LazyRow(
                 contentPadding = PaddingValues(start = startPadding, end = endPadding),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalArrangement = Arrangement.spacedBy(ItemDimensions.ItemSpacing),
                 modifier = Modifier
                     .focusRequester(lazyRow)
                     .focusRestorer {
@@ -193,7 +214,8 @@ fun ImmersiveListMoviesRow(
                         Modifier
                     }
                     MoviesRowItem(
-                        modifier = itemModifier.weight(1f),
+                        modifier = itemModifier
+                            .width(itemWidth),  // Fixed width instead of weight
                         index = index,
                         itemDirection = itemDirection,
                         onMovieSelected = {
@@ -251,7 +273,9 @@ private fun MoviesRowItem(
             .then(modifier)
     ) {
         MoviesRowItemImage(
-            modifier = Modifier.aspectRatio(itemDirection.aspectRatio),
+            modifier = Modifier
+                .fillMaxWidth()  // Fill the fixed width
+                .aspectRatio(itemDirection.aspectRatio),
             showIndexOverImage = showIndexOverImage,
             movie = movie,
             index = index
@@ -270,7 +294,6 @@ private fun MoviesRowItemImage(
         PosterImage(
             movie = movie,
             modifier = modifier
-                .fillMaxWidth()
                 .drawWithContent {
                     drawContent()
                     if (showIndexOverImage) {

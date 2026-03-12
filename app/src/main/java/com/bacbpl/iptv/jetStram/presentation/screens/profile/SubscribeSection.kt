@@ -1,5 +1,6 @@
 package com.bacbpl.iptv.jetStram.presentation.screens.profile
 
+import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -29,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,19 +47,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.whenStateAtLeast
+import com.bacbpl.iptv.JetStreamActivity
 import com.bacbpl.iptv.R
 import com.bacbpl.iptv.data.SharedPrefManager
-import com.bacbpl.iptv.data.util.StringConstants
-import com.bacbpl.iptv.ui.activities.HomeScreen
+import com.bacbpl.iptv.ui.activities.subscribescreen.BannerRow
+import com.bacbpl.iptv.ui.activities.subscribescreen.DynamicChoosePlanSection
+import com.bacbpl.iptv.ui.activities.subscribescreen.TopSection
 import com.bacbpl.iptv.ui.activities.subscribescreen.components.DynamicPlanCard
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.Plan
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.repositories.PlanRepository
 import com.bacbpl.iptv.ui.activities.subscribescreen.viewmodels.PlanViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Main SubscribeSection composable that matches the signature from profile package
@@ -75,14 +83,37 @@ fun SubscribeSection(
     val errorMessage by planViewModel.errorMessage.observeAsState()
     val subscribeResponse by planViewModel.subscribeResponse.observeAsState()
     val isSubscribing by planViewModel.isSubscribing.observeAsState(false)
+    val navigateToProfile by planViewModel.navigateToProfile.observeAsState(false)
 
     val context = LocalContext.current
     val sharedPrefManager = remember { SharedPrefManager(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Use SnackbarHostState instead of Toasts for better lifecycle management
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // State for subtitle checkbox
     var localIsSubtitlesChecked by remember { mutableStateOf(isSubtitlesChecked) }
 
-    // Handle subscription response
+    // Handle navigation to Profile (when subscriber doesn't exist)
+    LaunchedEffect(navigateToProfile) {
+        if (navigateToProfile) {
+            delay(500) // Small delay to show error message
+
+            // Check if lifecycle is at least STARTED before starting activity
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                val intent = Intent(context, JetStreamActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    putExtra("navigate_to_profile", true)
+                }
+                context.startActivity(intent)
+                planViewModel.clearNavigateToProfile()
+            }
+        }
+    }
+
+    // Handle subscription response safely
     LaunchedEffect(subscribeResponse) {
         subscribeResponse?.let { response ->
             val toastMessage = if (response.success || response.status == true) {
@@ -91,9 +122,13 @@ fun SubscribeSection(
                 "❌ ${response.message}"
             }
 
-            Toast.makeText(context, toastMessage + "  " + " " + response.message, Toast.LENGTH_LONG).show()
-
-            // Clear response after showing
+            // Only show toast if lifecycle is at least STARTED
+//            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+//                Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
+//            }
+            if (context is Activity && !context.isFinishing && !context.isDestroyed) {
+                Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
+            }
             planViewModel.clearSubscribeResponse()
         }
     }
@@ -131,21 +166,27 @@ fun SubscribeSection(
                     println("cleanMobile_Print: $cleanMobile")
 
                     if (cleanMobile.isNullOrEmpty()) {
-                        Toast.makeText(
-                            context,
-                            "User mobile number not found. Please login again.",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        // Show toast safely
+                        coroutineScope.launch {
+                            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                                Toast.makeText(
+                                    context,
+                                    "User mobile number not found. Please login again.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                         return@DynamicChoosePlanSection
                     }
-                    // Show confirmation dialog or directly subscribe
-                    planViewModel.subscribeToPlan(cleanMobile, plan.id)
+
+                    // Subscribe to plan
+                    planViewModel.subscribeToPlan(cleanMobile, plan.id, context)
                 }
             )
         }
         item { Spacer(modifier = Modifier.height(10.dp)) }
 
-        // Subtitle Section (renamed from recursive call)
+        // Subtitle Section
         item {
             SubtitleSection(
                 isSubtitlesChecked = localIsSubtitlesChecked,
@@ -158,10 +199,12 @@ fun SubscribeSection(
         item { Spacer(modifier = Modifier.height(10.dp)) }
     }
 
-    // Show error message if any
+    // Show error message safely
     errorMessage?.let { message ->
         LaunchedEffect(message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
             planViewModel.clearErrorMessage()
         }
     }
@@ -187,7 +230,7 @@ fun SubscribeSection(
 }
 
 /**
- * New Subtitle Section component to replace the recursive call
+ * Subtitle Section component
  */
 @Composable
 fun SubtitleSection(
@@ -248,296 +291,4 @@ fun SubtitleSection(
             )
         }
     }
-}
-
-// Rest of the code remains the same...
-@Composable
-fun DynamicChoosePlanSection(
-    monthlyPlans: List<Plan>,
-    quarterlyPlans: List<Plan>,
-    halfYearlyPlans: List<Plan>,
-    isLoading: Boolean,
-    isSubscribing: Boolean,
-    errorMessage: String?,
-    onRetry: () -> Unit,
-    onPlanSelected: (Plan) -> Unit
-) {
-    var selectedPeriod by remember { mutableStateOf("monthly") }
-    val selectedPlan by remember { mutableStateOf<Plan?>(null) }
-    val context = LocalContext.current
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Choose a Plan",
-            color = Color.White,
-            fontSize = 22.sp
-        )
-
-        Text(
-            text = "TRENDING OFFER",
-            color = Color(0xFF00FF66),
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Period Selection Tabs
-        DynamicPeriodTabs(
-            selectedPeriod = selectedPeriod,
-            onPeriodSelected = { selectedPeriod = it }
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Loading indicator
-        if (isLoading) {
-            CircularProgressIndicator(color = Color.Red)
-        }
-
-        // Error message
-        else if (!errorMessage.isNullOrEmpty()) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    fontSize = 14.sp
-                )
-                Button(
-                    onClick = onRetry,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) {
-                    Text("Retry")
-                }
-            }
-        }
-
-        // Plans display
-        else {
-            // Get plans based on selected period
-            val plansToShow = when (selectedPeriod) {
-                "monthly" -> monthlyPlans
-                "quarterly" -> quarterlyPlans
-                "halfyearly" -> halfYearlyPlans
-                else -> emptyList()
-            }
-
-            if (plansToShow.isEmpty()) {
-                Text(
-                    text = "No plans available",
-                    color = Color.Gray,
-                    fontSize = 16.sp
-                )
-            } else {
-                // Sort plans by price (Premium first, then Gold, then Silver)
-                val sortedPlans = plansToShow.sortedByDescending { plan ->
-                    when (PlanRepository.getPlanTypeFromName(plan.sysPlanName)) {
-                        PlanRepository.PLAN_TYPE_PREMIUM -> 1
-                        PlanRepository.PLAN_TYPE_GOLD -> 2
-                        PlanRepository.PLAN_TYPE_SILVER -> 3
-                        else -> 0
-                    }
-                }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
-                        items(sortedPlans.size) { index ->
-                            DynamicPlanCard(
-                                plan = sortedPlans[index],
-                                onPlanSelected = { plan ->
-                                    // Show plan info in Toast
-                                    Toast.makeText(
-                                        context,
-                                        "Processing: ${plan.sysPlanName} - ₹${plan.sysPlanPrice}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                    // Call the subscription function
-                                    onPlanSelected(plan)
-                                },
-                                isSelected = selectedPlan?.id == sortedPlans[index].id,
-                                isSubscribing = isSubscribing
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DynamicPeriodTabs(
-    selectedPeriod: String,
-    onPeriodSelected: (String) -> Unit
-) {
-    val periods = listOf("Monthly", "Quarterly", "Half-Yearly")
-    val periodKeys = listOf("monthly", "quarterly", "halfyearly")
-    val interactionSources = remember { periods.map { MutableInteractionSource() } }
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .background(Color(0xFF2A2A2A), RoundedCornerShape(50.dp))
-            .padding(4.dp)
-    ) {
-        periods.forEachIndexed { index, period ->
-            val isSelected = selectedPeriod == periodKeys[index]
-            val interactionSource = interactionSources[index]
-            val isFocused by interactionSource.collectIsFocusedAsState()
-
-            Surface(
-                modifier = Modifier
-                    .focusable(interactionSource = interactionSource)
-                    .then(
-                        if (isFocused) {
-                            Modifier.border(2.dp, Color.Red, RoundedCornerShape(50.dp))
-                        } else {
-                            Modifier
-                        }
-                    ),
-                shape = RoundedCornerShape(50.dp),
-                color = if (isSelected) Color(0xFFD60000) else Color.Transparent,
-                onClick = { onPeriodSelected(periodKeys[index]) }
-            ) {
-                Text(
-                    text = period,
-                    color = if (isSelected) Color.White else Color.Gray,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun TopSection() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "My Plan",
-            color = Color.White,
-            fontSize = 28.sp
-        )
-
-        Text(
-            text = "One Stop For All Your Favourite\nOTT Subscriptions",
-            color = Color.White,
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun BannerRow() {
-    val banners = listOf(
-        R.drawable.plan_banner,
-        R.drawable.banner2,
-        R.drawable.banner3,
-        R.drawable.plan_banner,
-        R.drawable.banner2,
-        R.drawable.banner4
-    )
-
-    val listState = rememberLazyListState()
-    var currentPage by remember { mutableStateOf(0) }
-
-    // Create an infinite list by repeating the banners
-    val infiniteBanners = remember {
-        List(100) { index -> banners[index % banners.size] }
-    }
-
-    // Auto scroll continuously
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(3000)
-
-            // Get current visible item
-            val currentItem = listState.firstVisibleItemIndex
-
-            // Calculate next item (just increment, never reset)
-            val nextItem = currentItem + 1
-
-            // Animate to next item
-            listState.animateScrollToItem(nextItem)
-
-            // Update current page based on actual banner (modulo)
-            currentPage = nextItem % banners.size
-        }
-    }
-
-    Column {
-        LazyRow(
-            state = listState,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF4B2A2A))
-                .padding(12.dp)
-        ) {
-            items(infiniteBanners.size) { index ->
-                BannerImage(image = infiniteBanners[index])
-            }
-        }
-
-        // Page Indicators (based on actual banner index)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            repeat(banners.size) { index ->
-                Box(
-                    modifier = Modifier
-                        .size(if (currentPage == index) 10.dp else 6.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            if (currentPage == index)
-                                Color.Red
-                            else
-                                Color.Gray.copy(alpha = 0.5f)
-                        )
-                        .padding(horizontal = 2.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun BannerImage(image: Int) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-
-    Image(
-        painter = painterResource(id = image),
-        contentDescription = "",
-        modifier = Modifier
-            .width(300.dp)
-            .height(100.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .focusable(interactionSource = interactionSource)
-            .then(
-                if (isFocused) {
-                    Modifier.border(3.dp, Color.Red, RoundedCornerShape(10.dp))
-                } else {
-                    Modifier
-                }
-            )
-            .clickable {
-                // Handle banner click
-            },
-        contentScale = ContentScale.Crop
-    )
 }

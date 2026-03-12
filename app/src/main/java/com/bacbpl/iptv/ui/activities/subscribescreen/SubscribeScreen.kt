@@ -1,4 +1,5 @@
 package com.bacbpl.iptv.ui.activities.subscribescreen
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -30,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.bacbpl.iptv.JetStreamActivity
 import com.bacbpl.iptv.R
 import com.bacbpl.iptv.data.SharedPrefManager
 import com.bacbpl.iptv.ui.activities.HomeScreen
@@ -38,6 +41,7 @@ import com.bacbpl.iptv.ui.activities.subscribescreen.data.Plan
 import com.bacbpl.iptv.ui.activities.subscribescreen.data.repositories.PlanRepository
 import com.bacbpl.iptv.ui.activities.subscribescreen.viewmodels.PlanViewModel
 import kotlinx.coroutines.delay
+import kotlin.jvm.java
 
 class SubscribeScreen : ComponentActivity() {
 
@@ -109,10 +113,30 @@ fun SubscribeUI() {
     val errorMessage by planViewModel.errorMessage.observeAsState()
     val subscribeResponse by planViewModel.subscribeResponse.observeAsState()
     val isSubscribing by planViewModel.isSubscribing.observeAsState(false)
+    val navigateToProfile by planViewModel.navigateToProfile.observeAsState(false)
 
     val context = LocalContext.current
+    // Auto navigate after 5 seconds
+    LaunchedEffect(Unit) {
+        delay(5000)
+        val intent = Intent(context, HomeScreen::class.java)
+        context.startActivity(intent)
+    }
+
     val sharedPrefManager = remember { SharedPrefManager(context) }
-    var shouldNavigateToHome by remember { mutableStateOf(false) }
+
+    // Handle navigation to Profile (when subscriber doesn't exist)
+    LaunchedEffect(navigateToProfile) {
+        if (navigateToProfile) {
+            delay(500) // Small delay to show error message
+            val intent = Intent(context, JetStreamActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra("navigate_to_profile", true)
+            }
+            context.startActivity(intent)
+            planViewModel.clearNavigateToProfile()
+        }
+    }
 
     // Handle subscription response
     LaunchedEffect(subscribeResponse) {
@@ -122,20 +146,11 @@ fun SubscribeUI() {
             } else {
                 "❌ ${response.message}"
             }
-
-            Toast.makeText(context, toastMessage+"  "+ " " +response.message, Toast.LENGTH_LONG).show()
-
-            // Clear response after showing
+//            Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
+            if (context is Activity && !context.isFinishing && !context.isDestroyed) {
+                Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
+            }
             planViewModel.clearSubscribeResponse()
-        }
-    }
-// Navigate to HomeScreen when flag is true
-    LaunchedEffect(shouldNavigateToHome) {
-        if (shouldNavigateToHome) {
-            delay(500) // Small delay to show success message
-            val intent = Intent(context, HomeScreen::class.java)
-            context.startActivity(intent)
-            shouldNavigateToHome = false
         }
     }
 
@@ -149,9 +164,6 @@ fun SubscribeUI() {
         item { Spacer(modifier = Modifier.height(5.dp)) }
         item { BannerRow() }
         item { Spacer(modifier = Modifier.height(10.dp)) }
-//        item { SubscribeSection() }
-//        item { Spacer(modifier = Modifier.height(20.dp)) }
-
 
         // Dynamic Plan Section
         item {
@@ -170,11 +182,7 @@ fun SubscribeUI() {
                     val mobile = sharedPrefManager.getUserMobile()
                     println("mobile_Print: $mobile")
 
-//// Remove any country code starting with + and keep only digits
-//                    val cleanMobile = mobile?.replace(Regex("\\+\\d+"), "")?.trim()
-//                    println("cleanMobile_Print: $cleanMobile")
-
-// Or more specifically, remove only +91
+                    // Remove +91 country code
                     val cleanMobile = mobile?.replace("+91", "")?.trim()
                     println("cleanMobile_Print: $cleanMobile")
 
@@ -186,8 +194,9 @@ fun SubscribeUI() {
                         ).show()
                         return@DynamicChoosePlanSection
                     }
-                    // Show confirmation dialog or directly subscribe
-                    planViewModel.subscribeToPlan(cleanMobile, plan.id)
+
+                    // Call subscription
+                    planViewModel.subscribeToPlan(cleanMobile, plan.id, context)
                 }
             )
         }
@@ -222,7 +231,6 @@ fun SubscribeUI() {
             }
         }
     }
-
 }
 
 @Composable

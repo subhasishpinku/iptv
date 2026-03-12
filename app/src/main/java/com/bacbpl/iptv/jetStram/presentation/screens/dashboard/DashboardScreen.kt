@@ -288,6 +288,8 @@
 //    }
 package com.bacbpl.iptv.jetStram.presentation.screens.dashboard
 
+import android.content.Intent
+import android.os.Bundle
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
@@ -317,18 +319,21 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.bacbpl.iptv.jetStram.data.entities.Movie
+import com.bacbpl.iptv.jetStram.presentation.screens.News.NewsScreen
 import com.bacbpl.iptv.jetStram.presentation.screens.Screens
 import com.bacbpl.iptv.jetStram.presentation.screens.categories.CategoriesScreen
 import com.bacbpl.iptv.jetStram.presentation.screens.favourites.FavouritesScreen
@@ -341,6 +346,8 @@ import com.bacbpl.iptv.jetStram.presentation.utils.Padding
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.DashboardTopBar
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.TopBarFocusRequesters
 import com.bacbpl.iptv.jetStram.presentation.screens.dashboard.TopBarTabs
+import com.bacbpl.iptv.jetStram.presentation.screens.home.TvChannelViewModel
+import com.bacbpl.iptv.jetStram.presentation.screens.player.TvPlayer
 import com.bacbpl.iptv.jetfit.ui.activities.MainActivity
 
 val ParentPadding = PaddingValues(vertical = 16.dp, horizontal = 58.dp)
@@ -493,12 +500,16 @@ private fun BackPressHandledArea(
 private fun Body(
     openCategoryMovieList: (categoryId: String) -> Unit,
     openMovieDetailsScreen: (movieId: String) -> Unit,
-    openVideoPlayer: (Movie) -> Unit,  // Changed to accept Movie parameter
+    openVideoPlayer: (Movie) -> Unit,
     updateTopBarVisibility: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     isTopBarVisible: Boolean = true,
-) =
+    tvChannelViewModel: TvChannelViewModel = hiltViewModel() // Add this parameter
+
+) {
+    val context = LocalContext.current  // Add this line to get the context
+
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -512,7 +523,33 @@ private fun Body(
                 onMovieClick = { selectedMovie ->
                     openMovieDetailsScreen(selectedMovie.id)
                 },
-                goToVideoPlayer = openVideoPlayer,  // Pass the function directly
+                goToVideoPlayer = openVideoPlayer,
+                onTvChannelClick = { channel ->
+                    // Handle TV channel click
+//                    val intent = Intent(context, TvPlayer::class.java)
+//                    val bundle = Bundle().apply {
+//                        putString("id", channel.id)
+//                        putString("name", channel.name)
+//                        putString("logoUrl", channel.logoUrl)      // Fixed: logoUrl instead of logo
+//                        putString("streamUrl", channel.streamUrl)  // Fixed: streamUrl instead of url
+//                        putString("category", channel.category)    // Added category
+//                    }
+//                    intent.putExtras(bundle)
+//                    context.startActivity(intent)
+                    val allChannels = tvChannelViewModel.channels.value
+                    val currentIndex = allChannels.indexOfFirst { it.id == channel.id }
+
+                    val intent = Intent(context, TvPlayer::class.java).apply {
+                        putExtra("id", channel.id)
+                        putExtra("name", channel.name)
+                        putExtra("logoUrl", channel.logoUrl)
+                        putExtra("streamUrl", channel.streamUrl)
+                        putExtra("category", channel.category)
+                        putExtra("current_index", currentIndex)
+                        putParcelableArrayListExtra("channel_list", ArrayList(allChannels))
+                    }
+                    context.startActivity(intent)
+                },
                 onScroll = updateTopBarVisibility,
                 isTopBarVisible = isTopBarVisible
             )
@@ -544,7 +581,12 @@ private fun Body(
                 isTopBarVisible = isTopBarVisible
             )
         }
-
+        composable(Screens.News()) {
+            NewsScreen(
+                onScroll = updateTopBarVisibility,
+                isTopBarVisible = isTopBarVisible
+            )
+        }
         composable(Screens.Search()) {
             SearchScreen(
                 onMovieClick = { movie -> openMovieDetailsScreen(movie.id) },
@@ -552,3 +594,4 @@ private fun Body(
             )
         }
     }
+}

@@ -202,7 +202,7 @@ private fun JetStreamLogo(
             contentDescription = "JetStream Logo Image",
             modifier = Modifier
                 .padding(start = 4.dp)
-                .size(IconSize)
+                .size(100.dp)
         )
     }
 

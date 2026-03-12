@@ -54,7 +54,7 @@ fun AccountsSelectionItem(
             modifier = modifier
                 .padding(4.dp)
                 .fillMaxWidth()
-                .aspectRatio(2.5f),   // smaller box
+                .aspectRatio(3.5f),   // smaller box
             colors = ClickableSurfaceDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
             ),
