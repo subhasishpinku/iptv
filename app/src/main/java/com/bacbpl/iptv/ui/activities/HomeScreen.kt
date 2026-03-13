@@ -49,20 +49,20 @@ fun DarkCardUI() {
             horizontalArrangement = Arrangement.spacedBy(40.dp)
         ) {
             // FAMILY CARD
-            SelectableCard(
-                title = "Family",
-                isSelected = selectedCard == "Family",
-                onFocus = { selectedCard = "Family" }
-            ) {
-                val intent = Intent(context, MainActivity::class.java)
-                context.startActivity(intent)
-            }
+//            SelectableCard(
+//                title = "Family",
+//                isSelected = selectedCard == "Family",
+//                onFocus = { selectedCard = "Family" }
+//            ) {
+//                val intent = Intent(context, MainActivity::class.java)
+//                context.startActivity(intent)
+//            }
 
             // CHILD CARD
             SelectableCard(
-                title = "Child",
-                isSelected = selectedCard == "Child",
-                onFocus = { selectedCard = "Child" }
+                title = "Guest",
+                isSelected = selectedCard == "Guest",
+                onFocus = { selectedCard = "Guest" }
             ) {
                 val intent = Intent(context, JetStreamActivity::class.java)
                 context.startActivity(intent)

@@ -730,9 +730,10 @@
 //        }
 //    }
 //}
-package com.bacbpl.iptv.jetStram.presentation.screens.shows
 
+package com.bacbpl.iptv.jetStram.presentation.screens.shows
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -789,9 +790,26 @@ fun ShowsScreen(
     val listState = rememberLazyListState()
     val childPadding = rememberChildPadding()
 
+
+
     // Create a reference to the current ExoPlayer that can be accessed in navigation
     val exoPlayerRef = remember { mutableStateOf<ExoPlayer?>(null) }
+    val activity = (LocalContext.current as? android.app.Activity)
 
+    // Handle back button press to stop video
+    BackHandler(
+        enabled = true,
+        onBack = {
+            // Stop and release the player when back is pressed
+            exoPlayerRef.value?.run {
+                playWhenReady = false
+                stop()
+                release()
+            }
+            exoPlayerRef.value = null
+            activity?.finish()
+        }
+    )
     // Handle scroll to update top bar visibility
     LaunchedEffect(listState.isScrollInProgress) {
         if (listState.firstVisibleItemIndex > 0) {
@@ -1032,10 +1050,15 @@ fun TvAutoPlayer(
             e.printStackTrace()
         }
     }
-
     DisposableEffect(Unit) {
         onDispose {
-            // Don't release here - handled by navigation
+            // Always release in onDispose as safety cleanup
+            // Even if already released, calling again is safe
+            exoPlayer.run {
+                playWhenReady = false
+                stop()
+                release()
+            }
         }
     }
 

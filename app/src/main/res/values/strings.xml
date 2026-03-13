@@ -94,7 +94,7 @@
     <string name="top_rated">Top Rated</string>
     <string name="main_tv_channel">TV Channel</string>
     <string name="main_devotional">Devotional</string>
-    <string name="main_kids">Kids</string>
+<!--    <string name="main_kids">Kids</string>-->
     <string name="main_music">Music</string>
     <string name="main_game">Game</string>
     <string name="main_webWatch">Web Watch</string>

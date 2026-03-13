@@ -190,6 +190,12 @@ fun ProfileScreen(
                         onSubtitleCheckChange = { isSubtitlesChecked = it }
                     )
                 }
+                composable(ProfileScreens.Wallet()) {
+                    WalletSection(
+                        isSubtitlesChecked = isSubtitlesChecked,
+                        onSubtitleCheckChange = { isSubtitlesChecked = it }
+                    )
+                }
                 composable(ProfileScreens.About()) {
                     AboutSection()
                 }

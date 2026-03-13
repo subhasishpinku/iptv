@@ -236,8 +236,8 @@ class MainFragment : BrowseSupportFragment() {
                     HeaderIconItem(title.uppercase(), R.drawable.devotional)
 
 
-                getString(R.string.main_kids) ->
-                    HeaderIconItem(title.uppercase(), R.drawable.kids)
+//                getString(R.string.main_kids) ->
+//                    HeaderIconItem(title.uppercase(), R.drawable.kids)
 
                 getString(R.string.main_music) ->
                     HeaderIconItem(title.uppercase(), R.drawable.music)
@@ -321,13 +321,13 @@ class MainFragment : BrowseSupportFragment() {
                     mCashedFragments[cachedId]
                 }
 
-                row.headerItem.name.equals(
-                    context?.getString(R.string.main_kids), true
-                ) -> {
-                    val kidsFragment = KidsFragment(row.headerItem.name)
-                    mCashedFragments[cachedId] = kidsFragment
-                    mCashedFragments[cachedId]
-                }
+//                row.headerItem.name.equals(
+//                    context?.getString(R.string.main_kids), true
+//                ) -> {
+//                    val kidsFragment = KidsFragment(row.headerItem.name)
+//                    mCashedFragments[cachedId] = kidsFragment
+//                    mCashedFragments[cachedId]
+//                }
 
                 row.headerItem.name.equals(
                     context?.getString(R.string.main_person), true

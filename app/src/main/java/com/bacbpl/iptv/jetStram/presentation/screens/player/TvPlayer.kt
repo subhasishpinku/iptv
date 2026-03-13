@@ -1531,9 +1531,28 @@ fun TvPlayerScreen(
                     selectedCategory != null -> menuFocusRequester
                     else -> focusRequester
                 }
-            )
-            .onKeyEvent { keyEvent ->
+            ).onKeyEvent { keyEvent ->
                 when {
+                    // Handle back button to stop video and exit
+                    keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Back -> {
+                        if (showGrid) {
+                            showGrid = false
+                            true
+                        } else if (selectedCategory != null) {
+                            selectedCategory = null
+                            true
+                        } else {
+                            // Stop video and finish activity when back is pressed
+                            exoPlayer.run {
+                                playWhenReady = false
+                                stop()
+                                release()
+                            }
+                            (context as? android.app.Activity)?.finish()
+                            true
+                        }
+                    }
+
                     // Handle CHANNEL_UP and CHANNEL_DOWN
                     keyEvent.type == KeyEventType.KeyDown && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_CHANNEL_UP -> {
                         if (currentIndex < allChannels.size - 1) {
@@ -1574,19 +1593,6 @@ fun TvPlayerScreen(
                         true
                     }
 
-                    // Close grid with back button
-                    keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Back -> {
-                        if (showGrid) {
-                            showGrid = false
-                            true
-                        } else if (selectedCategory != null) {
-                            selectedCategory = null
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
                     // Channel navigation when no menu is shown
                     selectedCategory == null && !showGrid &&
                             keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight -> {
@@ -1607,6 +1613,81 @@ fun TvPlayerScreen(
                     else -> false
                 }
             }
+//            .onKeyEvent { keyEvent ->
+//                when {
+//                    // Handle CHANNEL_UP and CHANNEL_DOWN
+//                    keyEvent.type == KeyEventType.KeyDown && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_CHANNEL_UP -> {
+//                        if (currentIndex < allChannels.size - 1) {
+//                            currentIndex++
+//                            currentChannel = allChannels[currentIndex]
+//                        }
+//                        true
+//                    }
+//                    keyEvent.type == KeyEventType.KeyDown && keyEvent.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+//                        if (currentIndex > 0) {
+//                            currentIndex--
+//                            currentChannel = allChannels[currentIndex]
+//                        }
+//                        true
+//                    }
+//
+//                    // Show grid when category is selected and down pressed
+//                    selectedCategory != null && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionDown -> {
+//                        showGrid = true
+//                        true
+//                    }
+//
+//                    // Navigate categories with left/right when menu is focused
+//                    selectedCategory != null && !showGrid &&
+//                            keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight -> {
+//                        val currentIndex = availableMainCategories.indexOfFirst { it.first == selectedCategory }
+//                        if (currentIndex < availableMainCategories.size - 1) {
+//                            selectedCategory = availableMainCategories[currentIndex + 1].first
+//                        }
+//                        true
+//                    }
+//                    selectedCategory != null && !showGrid &&
+//                            keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft -> {
+//                        val currentIndex = availableMainCategories.indexOfFirst { it.first == selectedCategory }
+//                        if (currentIndex > 0) {
+//                            selectedCategory = availableMainCategories[currentIndex - 1].first
+//                        }
+//                        true
+//                    }
+//
+//                    // Close grid with back button
+//                    keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Back -> {
+//                        if (showGrid) {
+//                            showGrid = false
+//                            true
+//                        } else if (selectedCategory != null) {
+//                            selectedCategory = null
+//                            true
+//                        } else {
+//                            false
+//                        }
+//                    }
+//
+//                    // Channel navigation when no menu is shown
+//                    selectedCategory == null && !showGrid &&
+//                            keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight -> {
+//                        if (currentIndex < allChannels.size - 1) {
+//                            currentIndex++
+//                            currentChannel = allChannels[currentIndex]
+//                        }
+//                        true
+//                    }
+//                    selectedCategory == null && !showGrid &&
+//                            keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft -> {
+//                        if (currentIndex > 0) {
+//                            currentIndex--
+//                            currentChannel = allChannels[currentIndex]
+//                        }
+//                        true
+//                    }
+//                    else -> false
+//                }
+//            }
     ) {
         // AndroidView for ExoPlayer
         AndroidView(

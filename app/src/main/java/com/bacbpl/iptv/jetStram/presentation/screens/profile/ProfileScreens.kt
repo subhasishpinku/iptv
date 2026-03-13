@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Support
 import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class ProfileScreens(
@@ -31,7 +32,9 @@ enum class ProfileScreens(
     private val title: String? = null,
 ) {
     Accounts(Icons.Default.Person),
+
     Subscribe(Icons.Default.Subscriptions),
+    Wallet(Icons.Outlined.AccountBalanceWallet, "Wallet"),
 
     About(Icons.Default.Info),
     Subtitles(Icons.Default.Subtitles),

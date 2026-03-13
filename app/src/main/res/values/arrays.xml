@@ -11,7 +11,7 @@
         <item>@string/main_devotional</item>
         <item>@string/main_person</item>
 
-        <item>@string/main_kids</item>
+<!--        <item>@string/main_kids</item>-->
         <item>@string/main_music</item>
         <item>@string/main_game</item>
         <item>@string/main_webWatch</item>

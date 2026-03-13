@@ -56,7 +56,9 @@ fun AccountsSelectionItem(
                 .fillMaxWidth()
                 .aspectRatio(3.5f),   // smaller box
             colors = ClickableSurfaceDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
+                containerColor = Color(0xFFFFD700), //
+                focusedContainerColor = Color(0xFFFFD700).copy(alpha = 0.8f), //
+                pressedContainerColor = Color(0xFFFFA500), //
             ),
             shape = ClickableSurfaceDefaults.shape(shape = MaterialTheme.shapes.extraSmall),
             scale = ClickableSurfaceDefaults.scale(focusedScale = 1f)
@@ -85,6 +87,7 @@ fun AccountsSelectionItem(
 
                     Text(
                         text = accountsSectionData.title,
+                        color = Color(0xFFE50914),
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontSize = 12.sp
                         ),
@@ -96,6 +99,7 @@ fun AccountsSelectionItem(
                     Text(
                         text = nnValue,
                         style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFE50914),
                         modifier = Modifier
                             .alpha(0.75f)
                             .padding(top = 4.dp),
