@@ -56,9 +56,9 @@ fun AccountsSelectionItem(
                 .fillMaxWidth()
                 .aspectRatio(3.5f),   // smaller box
             colors = ClickableSurfaceDefaults.colors(
-                containerColor = Color(0xFFFFD700), //
-                focusedContainerColor = Color(0xFFFFD700).copy(alpha = 0.8f), //
-                pressedContainerColor = Color(0xFFFFA500), //
+                containerColor = Color(0xFF1A1A1A), //
+                focusedContainerColor = Color(0xFF1A1A1A).copy(alpha = 0.8f), //
+                pressedContainerColor = Color(0xFFFFFFFF), //
             ),
             shape = ClickableSurfaceDefaults.shape(shape = MaterialTheme.shapes.extraSmall),
             scale = ClickableSurfaceDefaults.scale(focusedScale = 1f)

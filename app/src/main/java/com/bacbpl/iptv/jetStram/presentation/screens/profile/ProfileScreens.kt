@@ -34,7 +34,7 @@ enum class ProfileScreens(
     Accounts(Icons.Default.Person),
 
     Subscribe(Icons.Default.Subscriptions),
-    Wallet(Icons.Outlined.AccountBalanceWallet, "Wallet"),
+    Wallet(Icons.Outlined.AccountBalanceWallet, "Payment"),
 
     About(Icons.Default.Info),
     Subtitles(Icons.Default.Subtitles),
